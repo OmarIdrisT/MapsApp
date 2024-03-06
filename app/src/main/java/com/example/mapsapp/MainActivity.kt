@@ -7,8 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomNavigation
@@ -53,7 +53,6 @@ import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListScreen
-import com.example.mapsapp.view.MyMap
 import com.example.mapsapp.view.SplashScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import kotlinx.coroutines.launch
@@ -78,13 +77,26 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.MapScreen.route) { MapScreen(navigationController, myViewModel) }
                         composable(Routes.MarkerListScreen.route) {MarkerListScreen(navigationController, myViewModel)}
                     }
-
                 }
             }
         }
     }
 }
 
+@Composable
+fun MyDrawer(myViewModel:MyViewModel) {
+    val navigationController = rememberNavController()
+    val scope = rememberCoroutineScope()
+    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
+        Text("Menú", modifier = Modifier.padding(16.dp))
+        Divider()
+        NavigationDrawerItem(label = { Text(text = "Item 1") }, selected = false, onClick = {scope.launch { state.close() }})
+        NavigationDrawerItem(label = { Text(text = "Item 2") }, selected = false, onClick = {scope.launch { state.close() }})
+    }) {
+        MyScaffold(navigationController, myViewModel, state)
+    }
+}
 
 @Composable
 fun MyScaffold(
@@ -93,10 +105,10 @@ fun MyScaffold(
     state: DrawerState
 ) {
     val bottomNavigationItems = myViewModel.bottomNavigationItems
-    val screenTitle = myViewModel.screenTitle
+    val screenTitle: String by myViewModel.screenTitle.observeAsState("")
     Scaffold(
-        topBar = { TopAppBar(myViewModel, navigationController, state) },
-        bottomBar = { MyBottomBar(navigationController, bottomNavigationItems)},
+        topBar = { MyTopAppBar(myViewModel,state)},
+        bottomBar = { MyBottomBar(navigationController, bottomNavigationItems) },
         content = { paddingValues ->
             Box(modifier = Modifier
                 .fillMaxSize()
@@ -104,7 +116,6 @@ fun MyScaffold(
                 if (screenTitle == "Marker List") {
                 }
                 else {
-                    MyMap(navigationController)
                 }
             }
         }
@@ -112,15 +123,15 @@ fun MyScaffold(
     )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(myViewModel: MyViewModel, navigationController: NavController, state: DrawerState) {
+fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
     val showSearchBar: Boolean by myViewModel.showSearchBar.observeAsState(false)
+    val screenTitle: String by myViewModel.screenTitle.observeAsState("")
     val scope = rememberCoroutineScope()
-    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
     TopAppBar(
-        title = { Text(text = myViewModel.screenTitle) },
+        title = { Text(text = screenTitle) },
         navigationIcon = {
             if (screenTitle == "Map") {
                 IconButton(onClick = {
@@ -207,16 +218,4 @@ fun MySearchBar (myViewModel: MyViewModel) {
     }
 }
 
-@Composable
-fun MyDrawer(myViewModel:MyViewModel) {
-    val navigationController = rememberNavController()
-    val scope = rememberCoroutineScope()
-    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
-        Text("Menú", modifier = Modifier.padding(16.dp))
-        Divider()
-        NavigationDrawerItem(label = { Text(text = "Item 1") }, selected = false, onClick = {scope.launch { state.close() }})
-    }) {
-        MyScaffold(navigationController = navigationController, myViewModel = myViewModel, state)
-    }
-}
+

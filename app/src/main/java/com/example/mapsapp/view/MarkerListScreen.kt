@@ -8,5 +8,4 @@ import com.example.mapsapp.viewmodel.MyViewModel
 
 @Composable
 fun MarkerListScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
-    MyDrawer(myViewModel, "Map")
 }
