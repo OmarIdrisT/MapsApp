@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.example.mapsapp.MyDrawer
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -24,7 +23,7 @@ fun MapScreen(navigationController: NavController, myViewModel: MyViewModel) {
 }
 
 
-/*
+
 
 @Composable
 fun MyMap() {
@@ -39,8 +38,6 @@ fun MyMap() {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            uiSettings = MapUiSettings(),
-            properties = MapProperties(mapType = MapType.HYBRID),
             onMapClick = {},
             onMapLongClick = {
             }
@@ -55,5 +52,4 @@ fun MyMap() {
     }
 }
 
-*/
 

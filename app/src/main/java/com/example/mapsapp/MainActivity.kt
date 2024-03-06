@@ -53,6 +53,7 @@ import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListScreen
+import com.example.mapsapp.view.MyMap
 import com.example.mapsapp.view.SplashScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import kotlinx.coroutines.launch
@@ -68,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navigationController = rememberNavController()
                     val myViewModel = MyViewModel()
-                    MyDrawer(myViewModel)
+
                     NavHost(
                         navController = navigationController,
                         startDestination = Routes.SplashScreen.route
@@ -83,139 +84,35 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
 @Composable
-fun MyDrawer(myViewModel:MyViewModel) {
-    val navigationController = rememberNavController()
-    val scope = rememberCoroutineScope()
-    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
-        Text("Menú", modifier = Modifier.padding(16.dp))
-        Divider()
-        NavigationDrawerItem(label = { Text(text = "Item 1") }, selected = false, onClick = {scope.launch { state.close() }})
-        NavigationDrawerItem(label = { Text(text = "Item 2") }, selected = false, onClick = {scope.launch { state.close() }})
-    }) {
-        MyScaffold(navigationController, myViewModel, state)
+fun MyScaffold(myViewModel: MyViewModel, state: DrawerState) {
+    Scaffold(
+        topBar = {MyTopAppBar(myViewModel, state)}
+    )
+    { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+        }
     }
 }
-
-@Composable
-fun MyScaffold(
-    navigationController: NavController,
-    myViewModel: MyViewModel,
-    state: DrawerState
-) {
-    val bottomNavigationItems = myViewModel.bottomNavigationItems
-    val screenTitle: String by myViewModel.screenTitle.observeAsState("")
-    Scaffold(
-        topBar = { MyTopAppBar(myViewModel,state)},
-        bottomBar = { MyBottomBar(navigationController, bottomNavigationItems) },
-        content = { paddingValues ->
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)) {
-                if (screenTitle == "Marker List") {
-                }
-                else {
-                }
-            }
-        }
-
-    )
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
-    val showSearchBar: Boolean by myViewModel.showSearchBar.observeAsState(false)
-    val screenTitle: String by myViewModel.screenTitle.observeAsState("")
     val scope = rememberCoroutineScope()
     TopAppBar(
-        title = { Text(text = screenTitle) },
-        navigationIcon = {
-            if (screenTitle == "Map") {
-                IconButton(onClick = {
-                    scope.launch {
-                        state.open()
-                    }
-                }) {
-                    Icon(imageVector = Icons.Filled.Menu, contentDescription = "menu")
+        title = {Text(text = "Menu")},
+        navigationIcon =
+            {
+                IconButton(onClick = {scope.launch { state.open() }}) {
+                        Icon(imageVector = Icons.Filled.Menu, contentDescription = "menu")
                 }
-        } },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Black,
-            titleContentColor = Color.White,
-            actionIconContentColor = Color.White
-        ),
-        actions = {
-            if (screenTitle == "Marker List") {
-                if (showSearchBar) {
-                    MySearchBar(myViewModel)
-                }
-                IconButton(onClick = {myViewModel.deploySearchBar(true)}){
-                    Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
-                }
-            }
-            else {
-
-            }
-
-        }
-    )
-}
-@Composable
-fun MyBottomBar(
-    navigationController: NavController,
-    bottomNavigationItems: List<BottomNavigationScreen>
-) {
-    BottomNavigation(backgroundColor = Color.Black, contentColor = Color.White) {
-        val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-        bottomNavigationItems.forEach { item ->
-            val selectedColor = if(currentRoute == item.route) Color.Green else Color.White
-            BottomNavigationItem(
-                icon = { Icon(item.icon, contentDescription = item.label, tint = selectedColor) },
-                label = { Text(text = item.label, color = selectedColor) },
-                selected = currentRoute == item.route,
-                alwaysShowLabel = false,
-                onClick = {
-                    if (currentRoute != item.route) {
-                        navigationController.navigate(item.route)
-                    }
-                }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MySearchBar (myViewModel: MyViewModel) {
-    val searchText: String by myViewModel.searchText.observeAsState("")
-    val showSearchBar: Boolean by myViewModel.showSearchBar.observeAsState(true)
-    SearchBar(
-        colors = SearchBarDefaults.colors(Color.Black, inputFieldColors = TextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)),
-        query = searchText,
-        onQueryChange = { myViewModel.onSearchTextChange(it) },
-        onSearch = { myViewModel.onSearchTextChange(it) },
-        trailingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = "CloseSearch",
-                tint = Color.White,
-                modifier = Modifier.clickable {
-                    if (showSearchBar) {
-                        myViewModel.deploySearchBar(false)
-                    }
-                })
-        },
-        active = true,
-        placeholder = { Text(text = "Search...", color = Color.White) },
-        onActiveChange = {},
-        modifier = Modifier
-            .fillMaxHeight(0.1f)
-            .clip(CircleShape)) {
-    }
+            })
 }
 
 
