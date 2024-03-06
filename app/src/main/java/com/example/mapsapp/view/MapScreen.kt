@@ -19,7 +19,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun MapScreen(navigationController: NavController, myViewModel: MyViewModel) {
 
-
 }
 
 

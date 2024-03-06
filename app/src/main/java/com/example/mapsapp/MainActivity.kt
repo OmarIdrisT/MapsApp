@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
@@ -67,9 +68,10 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
+
                     val navigationController = rememberNavController()
                     val myViewModel = MyViewModel()
-
+                    MyDrawer(myViewModel)
                     NavHost(
                         navController = navigationController,
                         startDestination = Routes.SplashScreen.route
@@ -84,35 +86,73 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun MyDrawer(myViewModel: MyViewModel) {
+    val navigationController = rememberNavController()
+    val scope = rememberCoroutineScope()
+    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
+        ModalDrawerSheet {
+            Text("Drawer title", modifier = Modifier.padding(16.dp))
+            Divider()
+            NavigationDrawerItem(
+                label = { Text(text = "Drawer Item 1")},
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                }
+            )
+            NavigationDrawerItem(
+                label = { Text(text = "Drawer Item 2")},
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                }
+            )
+        }
+    }) {
+        MyScaffold(myViewModel, state)
+    }
+}
 
 
 @Composable
 fun MyScaffold(myViewModel: MyViewModel, state: DrawerState) {
     Scaffold(
         topBar = {MyTopAppBar(myViewModel, state)}
-    )
-    { paddingValues ->
+    ) {paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            MyMap()
         }
+
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
     val scope = rememberCoroutineScope()
     TopAppBar(
-        title = {Text(text = "Menu")},
-        navigationIcon =
-            {
-                IconButton(onClick = {scope.launch { state.open() }}) {
-                        Icon(imageVector = Icons.Filled.Menu, contentDescription = "menu")
+        title = { Text(text = "My SuperApp") },
+        navigationIcon = {
+            IconButton(onClick = {
+                scope.launch {
+                    state.open()
                 }
-            })
+            }) {
+                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+            }
+        }
+    )
 }
+
+
 
 
