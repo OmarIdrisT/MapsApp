@@ -1,32 +1,28 @@
 package com.example.mapsapp.viewmodel
 
 import androidx.lifecycle.MutableLiveData
-import com.example.mapsapp.model.BottomNavigationScreen
+import com.example.mapsapp.model.MarkerData
+import com.google.android.gms.maps.model.LatLng
 
 class MyViewModel {
-    val bottomNavigationItems = listOf(
-        BottomNavigationScreen.Home,
-        BottomNavigationScreen.Favorite
-    )
+    private var _position = LatLng(41.4534265, 2.1837151)
+    val position = _position
+    private val _markerList = MutableLiveData<MutableList<MarkerData>>()
+    val markerList = _markerList
 
-    private var _searchText = MutableLiveData<String>()
-    val searchText = _searchText
 
-    fun onSearchTextChange(text: String) {
-        _searchText.value = text
+    fun positionChange(newPosition: LatLng) {
+        _position = newPosition
     }
-    private val _showSearchBar = MutableLiveData(false)
-    var showSearchBar = _showSearchBar
-
-    private val _screenTitle = MutableLiveData<String>()
-    val screenTitle = _screenTitle
-
-    fun changeScreenTitle(value: String) {
-        _screenTitle.value = value
+    fun markerAddition(newMarker: MarkerData) {
+        val markers = _markerList.value.orEmpty().toMutableList()
+        markers.add(newMarker)
+        _markerList.value = markers
     }
 
-
-    fun deploySearchBar(value : Boolean) {
-        _showSearchBar.value = value
+    fun markerDeletion(oldMarker: MarkerData) {
+        val markers = _markerList.value.orEmpty().toMutableList()
+        markers.remove(oldMarker)
+        _markerList.value = markers
     }
 }
