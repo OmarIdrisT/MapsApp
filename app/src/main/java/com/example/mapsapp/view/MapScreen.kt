@@ -46,8 +46,8 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," "))
-    val marcas:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ")))
-    var nouMarker by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ")))
+    var posicioNewMarker by remember { mutableStateOf(LatLng(0.0, 0.0)) }
     var showDeletionBottomSheet by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var myText by remember{ mutableStateOf("") }
@@ -66,8 +66,9 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
             cameraPositionState = cameraPositionState,
             onMapClick = {},
             onMapLongClick = {
-                nouMarker = it
+                posicioNewMarker = it
                 showBottomSheet = true
+                myMarker.position = posicioNewMarker
             }
         ) {
             if (showBottomSheet) {
@@ -90,7 +91,7 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
 
                 }
             }
-            for (i in marcas){
+            for (i in llistaMarkers){
                 println(i)
                 Marker(
                     state = MarkerState(position = i.position),
