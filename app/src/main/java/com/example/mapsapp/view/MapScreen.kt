@@ -66,9 +66,9 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
             cameraPositionState = cameraPositionState,
             onMapClick = {},
             onMapLongClick = {
-                posicioNewMarker = it
+                myViewModel.positionChange(it)
                 showBottomSheet = true
-                myMarker.position = posicioNewMarker
+
             }
         ) {
             if (showBottomSheet) {

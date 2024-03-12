@@ -16,8 +16,8 @@ class MyViewModel {
         private set
 
 
-    fun positionChange(thisMarker: MarkerData) {
-        _marker.value = thisMarker
+    fun positionChange(newPosition: LatLng) {
+        _marker.value!!.position = newPosition
     }
     fun markerAddition(newMarker: MarkerData) {
         val markers = _markerList.value.orEmpty().toMutableList()
