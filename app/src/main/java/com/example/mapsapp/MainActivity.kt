@@ -96,9 +96,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (permissionState.status.isGranted) {
-
                         MyDrawer(myViewModel)
-                    } else {
+                    }
+                    else {
                         Text("Need permission")
                     }
                     NavHost(
