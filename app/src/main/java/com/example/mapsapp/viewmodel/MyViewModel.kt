@@ -12,6 +12,7 @@ class MyViewModel {
     val marker = _marker
     private val _markerList = MutableLiveData<MutableList<MarkerData>>()
     val markerList = _markerList
+
     var placeType : String by mutableStateOf("Restaurant")
         private set
 

@@ -21,9 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.mapsapp.MyGeoLocalizer
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.myDropDownMenu
 import com.example.mapsapp.viewmodel.MyViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -31,6 +33,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen(navigationController: NavController, myViewModel: MyViewModel) {
 
@@ -129,7 +132,6 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
                 }
             }
         }
-
     }
 }
 
