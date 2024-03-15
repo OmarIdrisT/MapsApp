@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -32,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemColors
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -52,19 +49,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
+import com.example.mapsapp.view.CameraScreen
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListScreen
 import com.example.mapsapp.view.MyMap
+import com.example.mapsapp.view.MyRecyclerView
 import com.example.mapsapp.view.SplashScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -89,25 +88,32 @@ class MainActivity : ComponentActivity() {
 
                     val navigationController = rememberNavController()
                     val myViewModel = MyViewModel()
-                    val permissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    val localizationPermissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    val cameraPermissionState = rememberPermissionState(permission = android.Manifest.permission.CAMERA)
 
                     LaunchedEffect(Unit) {
-                        permissionState.launchPermissionRequest()
+                        localizationPermissionState.launchPermissionRequest()
+                    }
+                    LaunchedEffect(Unit) {
+                        cameraPermissionState.launchPermissionRequest()
                     }
 
-                    if (permissionState.status.isGranted) {
-                        MyDrawer(myViewModel)
+                    if (localizationPermissionState.status.isGranted) {
+                        MyDrawer(myViewModel, navigationController)
                     }
                     else {
                         Text("Need permission")
                     }
+
+
                     NavHost(
                         navController = navigationController,
                         startDestination = Routes.SplashScreen.route
                     ) {
                         composable(Routes.SplashScreen.route) { SplashScreen(navigationController) }
                         composable(Routes.MapScreen.route) { MapScreen(navigationController, myViewModel) }
-                        composable(Routes.MarkerListScreen.route) {MarkerListScreen(navigationController, myViewModel)}
+                        composable(Routes.MarkerListScreen.route) {MarkerListScreen(myViewModel, navigationController)}
+                        composable(Routes.CameraScreen.route) {CameraScreen(navigationController, myViewModel)}
                     }
                 }
             }
@@ -115,12 +121,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyDrawer(myViewModel: MyViewModel) {
-    val navigationController = rememberNavController()
+fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet (drawerContainerColor = Color.Black) {
             Text("Username", modifier = Modifier.padding(16.dp), color = Color.White)
@@ -133,6 +139,9 @@ fun MyDrawer(myViewModel: MyViewModel) {
                     scope.launch {
                         state.close()
                     }
+                    if (currentRoute != Routes.MapScreen.route) {
+                        navigationController.navigate(Routes.MapScreen.route)
+                    }
                 }
             )
             NavigationDrawerItem(
@@ -142,6 +151,9 @@ fun MyDrawer(myViewModel: MyViewModel) {
                 onClick = {
                     scope.launch {
                         state.close()
+                    }
+                    if (currentRoute != Routes.MarkerListScreen.route) {
+                        navigationController.navigate(Routes.MarkerListScreen.route)
                     }
                 }
             )
@@ -154,6 +166,8 @@ fun MyDrawer(myViewModel: MyViewModel) {
 
 @Composable
 fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
         topBar = {MyTopAppBar(myViewModel, state)}
     ) {paddingValues ->
@@ -162,7 +176,11 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            MyMap(myViewModel, navController)
+            when(currentRoute) {
+                Routes.MapScreen.route -> MyMap(myViewModel = myViewModel, navigationController = navController )
+                Routes.MarkerListScreen.route -> MyRecyclerView(myViewModel = myViewModel, navController = navController )
+            }
+
         }
 
     }
@@ -218,33 +236,11 @@ fun myDropDownMenu(myViewModel: MyViewModel) {
         }
     }
 }
-@SuppressLint("MissingPermission")
-@Composable
-fun MyGeoLocalizer() {
 
-    val context = LocalContext.current
-    val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
-    var deviceLatLng by remember { mutableStateOf(LatLng(0.0, 0.0)) }
-    val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f) }
-    val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
 
-    locationResult.addOnCompleteListener(context as MainActivity) { task ->
 
-        if (task.isSuccessful) {
 
-            lastKnownLocation = task.result
-            deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
 
-        } else {
-
-            Log.e("Error", "Exception: %s", task.exception)
-
-        }
-
-    }
-}
 
 
 

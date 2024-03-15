@@ -1,10 +1,82 @@
 package com.example.mapsapp.view
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.viewmodel.MyViewModel
+import com.google.android.gms.maps.model.LatLng
 
 
 @Composable
-fun MarkerListScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
+fun MarkerListScreen(myViewModel: MyViewModel, navController: NavController) {
+
+}
+
+@Composable
+fun MyRecyclerView(myViewModel: MyViewModel, navController: NavController) {
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ")))
+    LazyColumn() {
+        items(llistaMarkers.size) {
+            CardItem(marker = llistaMarkers[it], navController, myViewModel)
+        }
+    }
+}
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyViewModel) {
+    Box(modifier = Modifier
+        .padding(8.dp)
+        .fillMaxSize(),
+        contentAlignment = Alignment.Center){
+        Card (
+            border = BorderStroke(2.dp, Color.LightGray),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.padding(8.dp),
+            colors = CardDefaults.cardColors(Color.DarkGray.copy(alpha = 0.6f)),
+            onClick = {}
+        ) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${marker.title}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 20.sp,
+                        color = Color.White,
+                        textAlign = TextAlign.Center, modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                    )
+                }
+            }
+        }
+    }
 }

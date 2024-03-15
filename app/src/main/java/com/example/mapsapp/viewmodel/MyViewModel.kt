@@ -9,7 +9,7 @@ import com.google.android.gms.maps.model.LatLng
 
 class MyViewModel {
     private var _marker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," "))
-    val marker = _marker
+    var marker = _marker
     private val _markerList = MutableLiveData<MutableList<MarkerData>>()
     val markerList = _markerList
 
@@ -34,6 +34,10 @@ class MyViewModel {
 
     fun placeTypeChange (valor : String) {
         placeType = valor
+    }
+
+    fun chooseMarker (actualMarker: MarkerData) {
+        _marker.value = actualMarker
     }
 
 }
