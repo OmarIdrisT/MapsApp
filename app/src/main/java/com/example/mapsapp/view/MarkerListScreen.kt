@@ -25,7 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.maps.model.LatLng
 
@@ -37,13 +40,14 @@ fun MarkerListScreen(myViewModel: MyViewModel, navController: NavController) {
 
 @Composable
 fun MyRecyclerView(myViewModel: MyViewModel, navController: NavController) {
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ")))
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
     LazyColumn() {
         items(llistaMarkers.size) {
             CardItem(marker = llistaMarkers[it], navController, myViewModel)
         }
     }
 }
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyViewModel) {
@@ -56,7 +60,10 @@ fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyVi
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.padding(8.dp),
             colors = CardDefaults.cardColors(Color.DarkGray.copy(alpha = 0.6f)),
-            onClick = {}
+            onClick = {
+                myViewModel.chooseMarker(marker)
+                navController.navigate(Routes.DetailScreen.route)
+            }
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 Row(

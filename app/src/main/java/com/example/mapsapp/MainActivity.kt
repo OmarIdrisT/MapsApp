@@ -1,15 +1,21 @@
 package com.example.mapsapp
 
-import android.annotation.SuppressLint
-import android.location.Location
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -40,6 +47,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,9 +57,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -59,20 +69,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
-import com.example.mapsapp.view.CameraScreen
+import com.example.mapsapp.view.DetailScreen
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListScreen
+import com.example.mapsapp.view.MyDetails
 import com.example.mapsapp.view.MyMap
 import com.example.mapsapp.view.MyRecyclerView
 import com.example.mapsapp.view.SplashScreen
+import com.example.mapsapp.view.TakePhotoScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -113,7 +121,8 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.SplashScreen.route) { SplashScreen(navigationController) }
                         composable(Routes.MapScreen.route) { MapScreen(navigationController, myViewModel) }
                         composable(Routes.MarkerListScreen.route) {MarkerListScreen(myViewModel, navigationController)}
-                        composable(Routes.CameraScreen.route) {CameraScreen(navigationController, myViewModel)}
+                        composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navigationController, myViewModel)}
+                        composable(Routes.DetailScreen.route) { DetailScreen(navigationController, myViewModel) }
                     }
                 }
             }
@@ -179,6 +188,7 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
             when(currentRoute) {
                 Routes.MapScreen.route -> MyMap(myViewModel = myViewModel, navigationController = navController )
                 Routes.MarkerListScreen.route -> MyRecyclerView(myViewModel = myViewModel, navController = navController )
+                Routes.DetailScreen.route -> MyDetails(navigationController = navController , myViewModel = myViewModel )
             }
 
         }
@@ -236,6 +246,81 @@ fun myDropDownMenu(myViewModel: MyViewModel) {
         }
     }
 }
+
+@Composable
+fun MyCamera(navigationController: NavController, myViewModel: MyViewModel) {
+    val context = LocalContext.current
+    val isCameraPermissionGranted by myViewModel.cameraPermissionGranted.observeAsState(false)
+    val shouldShowPermissionRationale by myViewModel.shouldShowPermissionRationale.observeAsState(false)
+    val showPermissionDenied by myViewModel.showPermissionDenied.observeAsState(false)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                myViewModel.setCameraPermissionGranted(true)
+            } else {
+                myViewModel.setShouldShowPermissionRationale(
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.CAMERA
+                    )
+                )
+                if (!shouldShowPermissionRationale) {
+                    Log.i("CameraScreen", "No podemos volver a pedir permisos")
+                    myViewModel.setShowPermissionDenied(true)
+                }
+            }
+        }
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()) {
+        Button(onClick = {
+            if (!isCameraPermissionGranted) {
+                launcher.launch(Manifest.permission.CAMERA)
+            } else {
+                navigationController.navigate(Routes.TakePhotoScreen.route)
+            }
+        }) {
+            Text(text = "Take photo")
+        }
+    }
+    if(showPermissionDenied) {
+        PermissionDeclinedScreen()
+    }
+}
+
+@Composable
+fun PermissionDeclinedScreen() {
+    val context = LocalContext.current
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(text = "Permission Required", fontWeight = FontWeight.Bold)
+        Text(text = "This app needs access to the camera to take photos")
+        Button(onClick = {
+            openAppSettings(context as Activity)
+        }) {
+            Text(text = "Accept")
+        }
+    }
+}
+
+fun openAppSettings(activity: Activity) {
+    val intent = Intent().apply {
+        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        data = Uri.fromParts("package", activity.packageName, null)
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    }
+    activity.startActivity(intent)
+}
+
+
 
 
 

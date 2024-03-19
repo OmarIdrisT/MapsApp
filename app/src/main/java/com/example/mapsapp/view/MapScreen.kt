@@ -53,13 +53,14 @@ fun MapScreen(navigationController: NavController, myViewModel: MyViewModel) {
 fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," "))
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ")))
+    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
     var posicioNewMarker by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+    var placeType: String by remember { mutableStateOf(myViewModel.placeType) }
     var showDeletionBottomSheet by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var myText by remember{ mutableStateOf("") }
-    var mySnippet by remember { mutableStateOf("Marker at $myText") }
+    var myDescription by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -68,20 +69,24 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
     val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f) }
     val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
 
+    val mapaInicial by remember { mutableStateOf(myViewModel.mapaInicial) }
+
     locationResult.addOnCompleteListener(context as MainActivity) { task ->
-
         if (task.isSuccessful) {
-
             lastKnownLocation = task.result
-            deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+            if (mapaInicial) {
+                deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+            }
+            else {
+                deviceLatLng = LatLng(myMarker.position.latitude, myMarker.position.longitude)
+            }
             cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
-
+            myViewModel.changeMapaInicial()
         } else {
 
             Log.e("Error", "Exception: %s", task.exception)
 
         }
-
     }
 
     Column(
@@ -108,9 +113,14 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
                             value = myText,
                             onValueChange = { myText = it }
                         )
+                        Text(text = "Descripció")
+                        TextField(
+                            value = myDescription,
+                            onValueChange = {myDescription = it}
+                        )
                         myDropDownMenu(myViewModel = myViewModel)
                         Button(onClick = {
-                            myViewModel.markerAddition(MarkerData(myText, myMarker.position, mySnippet))
+                            myViewModel.markerAddition(MarkerData(myText, myMarker.position, myDescription, placeType, mutableListOf()))
                             showBottomSheet = false
                             myText = ""
                         }) {
@@ -121,11 +131,10 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
                 }
             }
             for (i in llistaMarkers){
-                println(i)
                 Marker(
                     state = MarkerState(position = i.position),
                     title = i.title,
-                    snippet = i.snippet
+                    snippet = i.description
                 )
             }
 
@@ -135,7 +144,7 @@ fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
                         Text(text = "Vols eliminar el marcador?")
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             Button(onClick = {
-                                myViewModel.markerDeletion(MarkerData(myText, myMarker.position, mySnippet))
+                                myViewModel.markerDeletion(MarkerData(myText, myMarker.position, myDescription, placeType, mutableListOf()))
                                 showDeletionBottomSheet = false
                             }) {
                                 Text(text = "Si")
