@@ -43,6 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -71,10 +73,7 @@ import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.DetailScreen
 import com.example.mapsapp.view.MapScreen
-import com.example.mapsapp.view.MarkerListScreen
-import com.example.mapsapp.view.MyDetails
-import com.example.mapsapp.view.MyMap
-import com.example.mapsapp.view.MyRecyclerView
+import com.example.mapsapp.view.MarkerListSCreen
 import com.example.mapsapp.view.SplashScreen
 import com.example.mapsapp.view.TakePhotoScreen
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -97,13 +96,9 @@ class MainActivity : ComponentActivity() {
                     val navigationController = rememberNavController()
                     val myViewModel = MyViewModel()
                     val localizationPermissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    val cameraPermissionState = rememberPermissionState(permission = android.Manifest.permission.CAMERA)
 
                     LaunchedEffect(Unit) {
                         localizationPermissionState.launchPermissionRequest()
-                    }
-                    LaunchedEffect(Unit) {
-                        cameraPermissionState.launchPermissionRequest()
                     }
 
                     if (localizationPermissionState.status.isGranted) {
@@ -111,18 +106,6 @@ class MainActivity : ComponentActivity() {
                     }
                     else {
                         Text("Need permission")
-                    }
-
-
-                    NavHost(
-                        navController = navigationController,
-                        startDestination = Routes.SplashScreen.route
-                    ) {
-                        composable(Routes.SplashScreen.route) { SplashScreen(navigationController) }
-                        composable(Routes.MapScreen.route) { MapScreen(navigationController, myViewModel) }
-                        composable(Routes.MarkerListScreen.route) {MarkerListScreen(myViewModel, navigationController)}
-                        composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navigationController, myViewModel)}
-                        composable(Routes.DetailScreen.route) { DetailScreen(navigationController, myViewModel) }
                     }
                 }
             }
@@ -178,6 +161,7 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
+        containerColor = Color.Black,
         topBar = {MyTopAppBar(myViewModel, state)}
     ) {paddingValues ->
         Box(
@@ -185,21 +169,27 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when(currentRoute) {
-                Routes.MapScreen.route -> MyMap(myViewModel = myViewModel, navigationController = navController )
-                Routes.MarkerListScreen.route -> MyRecyclerView(myViewModel = myViewModel, navController = navController )
-                Routes.DetailScreen.route -> MyDetails(navigationController = navController , myViewModel = myViewModel )
+            NavHost(
+                navController = navController as NavHostController,
+                startDestination = Routes.SplashScreen.route
+            ) {
+                composable(Routes.SplashScreen.route) { SplashScreen(navController) }
+                composable(Routes.MapScreen.route) { MapScreen(myViewModel, navController) }
+                composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
+                composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
+                composable(Routes.DetailScreen.route) { DetailScreen(navController, myViewModel) }
             }
-
         }
 
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
     val scope = rememberCoroutineScope()
     TopAppBar(
+        colors = TopAppBarColors(titleContentColor = Color.White, containerColor = Color.Black, navigationIconContentColor = Color.White, actionIconContentColor = Color.White, scrolledContainerColor = Color.Black),
         title = { Text(text = "My SuperApp") },
         navigationIcon = {
             IconButton(onClick = {
@@ -216,7 +206,7 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
 @Composable
 fun myDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val opcions = listOf("Restaurant", "Espai cultural", "Botiga", "Transport")
+    val opcions = listOf("Sense especificar", "Restaurant", "Oci", "Botiga", "Transport")
 
     Column (modifier = Modifier.padding(20.dp)) {
         OutlinedTextField(

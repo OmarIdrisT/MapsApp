@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.myDropDownMenu
+import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
@@ -38,19 +39,10 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-@Composable
-fun MapScreen(navigationController: NavController, myViewModel: MyViewModel) {
-
-
-}
-
-
-
-
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyMap(myViewModel: MyViewModel, navigationController: NavController) {
+fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))

@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -34,12 +33,7 @@ import com.google.android.gms.maps.model.LatLng
 
 
 @Composable
-fun MarkerListScreen(myViewModel: MyViewModel, navController: NavController) {
-
-}
-
-@Composable
-fun MyRecyclerView(myViewModel: MyViewModel, navController: NavController) {
+fun MarkerListSCreen(myViewModel: MyViewModel, navController: NavController) {
     val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
     LazyColumn() {
         items(llistaMarkers.size) {

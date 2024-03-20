@@ -1,5 +1,6 @@
 package com.example.mapsapp.viewmodel
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,7 +14,7 @@ class MyViewModel {
     private val _markerList = MutableLiveData<MutableList<MarkerData>>()
     val markerList = _markerList
 
-    var placeType : String by mutableStateOf("Restaurant")
+    var placeType : String by mutableStateOf("Sense especificar")
         private set
 
     var mapaInicial: Boolean by mutableStateOf(true)
@@ -64,6 +65,10 @@ class MyViewModel {
 
     fun setShowPermissionDenied(denied : Boolean) {
         _showPermissionDenied.value = denied
+    }
+
+    fun addPhotoToMarker(photo: Bitmap) {
+        _marker.value!!.images.add(photo)
     }
 
 }

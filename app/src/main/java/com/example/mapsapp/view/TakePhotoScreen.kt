@@ -1,5 +1,6 @@
 package com.example.mapsapp.view
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
@@ -24,6 +25,9 @@ import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,11 +36,34 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.mapsapp.MyDrawer
+import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.viewmodel.MyViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.LatLng
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
+
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
+
+    LaunchedEffect(Unit) {
+        cameraPermissionState.launchPermissionRequest()
+    }
+
+    if (cameraPermissionState.status.isGranted) {
+        Camera(navigationController = navigationController, myViewModel = myViewModel )
+    }
+}
+
+@Composable
+fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
+    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     val context = LocalContext.current
     val controller = remember {
         LifecycleCameraController(context).apply {
@@ -73,7 +100,7 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
                 }
                 IconButton(onClick = {
                     takePhoto(context, controller) {photo ->
-
+                        myViewModel.addPhotoToMarker(photo)
                     }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
