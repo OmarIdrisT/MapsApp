@@ -20,6 +20,13 @@ class MyViewModel {
     var mapaInicial: Boolean by mutableStateOf(true)
         private set
 
+    var comingFromMap : Boolean by mutableStateOf(false)
+        private set
+
+    private var _newMarkerPhotos = MutableLiveData<MutableList<Bitmap>>(mutableListOf())
+    var newMarkerPhotos = _newMarkerPhotos
+
+
     private val _cameraPermissionGranted = MutableLiveData(false)
     val cameraPermissionGranted = _cameraPermissionGranted
 
@@ -55,6 +62,10 @@ class MyViewModel {
         mapaInicial = false
     }
 
+    fun changeComingFromMap(fromMap: Boolean) {
+        comingFromMap = fromMap
+    }
+
     fun setCameraPermissionGranted(granted: Boolean) {
         _cameraPermissionGranted.value = granted
     }
@@ -69,6 +80,10 @@ class MyViewModel {
 
     fun addPhotoToMarker(photo: Bitmap) {
         _marker.value!!.images.add(photo)
+    }
+
+    fun addPhotosToNewMarker(photo: Bitmap) {
+        _newMarkerPhotos.value!!.add(photo)
     }
 
 }

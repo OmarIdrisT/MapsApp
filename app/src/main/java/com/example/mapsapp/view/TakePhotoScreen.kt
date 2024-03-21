@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,7 +65,7 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
 
 @Composable
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
-    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
+    val comingFromMap by remember { mutableStateOf(myViewModel.comingFromMap) }
     val context = LocalContext.current
     val controller = remember {
         LifecycleCameraController(context).apply {
@@ -95,16 +97,26 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
+                IconButton(onClick = {navigationController.navigateUp()}) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
                 }
                 IconButton(onClick = {
                     takePhoto(context, controller) {photo ->
-                        myViewModel.addPhotoToMarker(photo)
+                        if (!comingFromMap) {
+                            myViewModel.addPhotoToMarker(photo)
+                        }
+                        else {
+                            myViewModel.addPhotosToNewMarker(photo)
+                        }
+
                     }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
                 }
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
+                }
+
             }
         }
     }

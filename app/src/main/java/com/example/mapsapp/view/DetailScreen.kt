@@ -80,6 +80,7 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
                     } else {
                         Button(
                             onClick = {
+                                myViewModel.changeComingFromMap(false)
                                 navigationController.navigate(Routes.TakePhotoScreen.route)
                             },
                             modifier = Modifier.size(100.dp)
