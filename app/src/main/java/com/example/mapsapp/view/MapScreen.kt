@@ -25,10 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.example.mapsapp.MainActivity
-import com.example.mapsapp.MyCamera
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.myDropDownMenu
 import com.example.mapsapp.navigation.Routes
@@ -49,6 +47,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
+    val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
     val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
     var placeType: String by remember { mutableStateOf(myViewModel.placeType) }
     val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
@@ -57,8 +56,8 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     var showBottomSheet by remember { mutableStateOf(false) }
 
 
-    var myText by remember{ mutableStateOf("") }
-    var myDescription by remember { mutableStateOf("") }
+    val myTitle: String by myViewModel.markerTitle.observeAsState("")
+    val myDescription: String by myViewModel.markerDescription.observeAsState("")
 
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -99,22 +98,22 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             onMapClick = {},
             onMapLongClick = {
                 myViewModel.positionChange(it)
-                showBottomSheet = true
+                myViewModel.setNewMarkerBottomSheet(true)
 
             }
         ) {
-            if (showBottomSheet) {
-                ModalBottomSheet(onDismissRequest = {!showBottomSheet}, sheetState = sheetState) {
+            if (showNewMarkerBottomSheet) {
+                ModalBottomSheet(onDismissRequest = {myViewModel.setNewMarkerBottomSheet(false)}, sheetState = sheetState) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text(text = "Nom del marcador:")
                         TextField(
-                            value = myText,
-                            onValueChange = { myText = it }
+                            value = myTitle,
+                            onValueChange = { myViewModel.changeTitle(it) }
                         )
                         Text(text = "Descripció")
                         TextField(
                             value = myDescription,
-                            onValueChange = {myDescription = it}
+                            onValueChange = {myViewModel.changeDescription(it)}
                         )
                         myDropDownMenu(myViewModel = myViewModel)
                         Button(onClick = {
@@ -122,9 +121,10 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             navigationController.navigate(Routes.TakePhotoScreen.route) }) {
                         }
                         Button(onClick = {
-                            myViewModel.markerAddition(MarkerData(myText, myMarker.position, myDescription, placeType, newMarkerPhotos))
-                            showBottomSheet = false
-                            myText = ""
+                            myViewModel.markerAddition(MarkerData(myTitle, myMarker.position, myDescription, placeType, newMarkerPhotos))
+                            myViewModel.setNewMarkerBottomSheet(false)
+                            myViewModel.changeTitle("")
+                            myViewModel.changeDescription("")
                         }) {
                             Text(text = "Crear marcador")
                         }
@@ -146,7 +146,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                         Text(text = "Vols eliminar el marcador?")
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             Button(onClick = {
-                                myViewModel.markerDeletion(MarkerData(myText, myMarker.position, myDescription, placeType, mutableListOf()))
+                                myViewModel.markerDeletion(MarkerData(myTitle, myMarker.position, myDescription, placeType, mutableListOf()))
                                 showDeletionBottomSheet = false
                             }) {
                                 Text(text = "Si")
