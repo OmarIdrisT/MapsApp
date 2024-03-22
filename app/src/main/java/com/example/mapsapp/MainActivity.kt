@@ -74,7 +74,6 @@ import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.DetailScreen
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListSCreen
-import com.example.mapsapp.view.SplashScreen
 import com.example.mapsapp.view.TakePhotoScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -171,9 +170,8 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
         ) {
             NavHost(
                 navController = navController as NavHostController,
-                startDestination = Routes.SplashScreen.route
+                startDestination = Routes.MapScreen.route
             ) {
-                composable(Routes.SplashScreen.route) { SplashScreen(navController) }
                 composable(Routes.MapScreen.route) { MapScreen(myViewModel, navController) }
                 composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
                 composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
@@ -206,7 +204,7 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
 @Composable
 fun myDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val opcions = listOf("Sense especificar", "Restaurant", "Oci", "Botiga", "Transport")
+    val opcions = listOf("Sense especificar", "Cafeteria", "Restaurant", "Entreteniment", "Botiga", "Transport")
 
     Column (modifier = Modifier.padding(20.dp)) {
         OutlinedTextField(
@@ -264,19 +262,15 @@ fun MyCamera(navigationController: NavController, myViewModel: MyViewModel) {
         }
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()) {
-        Button(onClick = {
-            if (!isCameraPermissionGranted) {
-                launcher.launch(Manifest.permission.CAMERA)
-            } else {
-                navigationController.navigate(Routes.TakePhotoScreen.route)
-            }
-        }) {
-            Text(text = "Take photo")
+    Button(onClick = {
+        if (!isCameraPermissionGranted) {
+            launcher.launch(Manifest.permission.CAMERA)
+        } else {
+            myViewModel.changeComingFromMap(true)
+            navigationController.navigate(Routes.TakePhotoScreen.route)
         }
+    }) {
+        Text(text = "Take photo")
     }
     if(showPermissionDenied) {
         PermissionDeclinedScreen()

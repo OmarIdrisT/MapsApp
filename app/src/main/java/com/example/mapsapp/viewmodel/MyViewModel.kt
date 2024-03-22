@@ -1,10 +1,16 @@
 package com.example.mapsapp.viewmodel
 
+import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.MutableLiveData
+import com.example.mapsapp.R
 import com.example.mapsapp.model.MarkerData
 import com.google.android.gms.maps.model.LatLng
 
@@ -29,6 +35,15 @@ class MyViewModel {
     //Tipus de localització dels marcadors
     var placeType : String by mutableStateOf("Sense especificar")
         private set
+
+    val placeTypeIcon = when (placeType) {
+        "Cafeteria" -> R.drawable.cafeteria
+        "Restaurant" -> R.drawable.restaurants
+        "Entreteniment" -> R.drawable.entertainment
+        "Botiga" -> R.drawable.shopping
+        "Transport" -> R.drawable.transport
+        else -> R.drawable.defaultplace
+    }
 
     //Variable que controla el estat del ModalBottomSheet per crear nous marcadors.
     private var _showNewMarkerBottomSheet = MutableLiveData<Boolean>(false)
@@ -135,6 +150,11 @@ class MyViewModel {
     //Funció que afegeix fotos al marker des del mapa.
     fun addPhotosToNewMarker(photo: Bitmap) {
         _newMarkerPhotos.value!!.add(photo)
+    }
+
+    //Funció que neteja la llista de fotos del marcador nou en cas de sortir del BottomSheet
+    fun clearPhotosFromNewMarker() {
+        _newMarkerPhotos.value!!.clear()
     }
 
 }

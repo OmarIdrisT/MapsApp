@@ -1,9 +1,12 @@
 package com.example.mapsapp.view
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -24,7 +27,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,30 +42,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.mapsapp.MyDrawer
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.PermissionDeclinedScreen
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
 
-    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-
-    LaunchedEffect(Unit) {
-        cameraPermissionState.launchPermissionRequest()
-    }
-
-    if (cameraPermissionState.status.isGranted) {
-        Camera(navigationController = navigationController, myViewModel = myViewModel )
-    }
+    Camera(navigationController, myViewModel)
 }
 
 @Composable

@@ -1,14 +1,18 @@
 package com.example.mapsapp.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -25,13 +29,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mapsapp.MainActivity
+import com.example.mapsapp.MyCamera
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.myDropDownMenu
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -50,6 +58,8 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
     val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
     var placeType: String by remember { mutableStateOf(myViewModel.placeType) }
+    var placeTypeIcon by remember { mutableStateOf(myViewModel.placeTypeIcon) }
+
     val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
     var showDeletionBottomSheet by remember { mutableStateOf(false) }
@@ -103,7 +113,10 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             }
         ) {
             if (showNewMarkerBottomSheet) {
-                ModalBottomSheet(onDismissRequest = {myViewModel.setNewMarkerBottomSheet(false)}, sheetState = sheetState) {
+                ModalBottomSheet(onDismissRequest = {
+                    myViewModel.clearPhotosFromNewMarker()
+                    myViewModel.setNewMarkerBottomSheet(false)},
+                    sheetState = sheetState) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text(text = "Nom del marcador:")
                         TextField(
@@ -116,10 +129,17 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             onValueChange = {myViewModel.changeDescription(it)}
                         )
                         myDropDownMenu(myViewModel = myViewModel)
-                        Button(onClick = {
-                            myViewModel.changeComingFromMap(true)
-                            navigationController.navigate(Routes.TakePhotoScreen.route) }) {
+                        MyCamera(myViewModel = myViewModel, navigationController = navigationController)
+                        if (newMarkerPhotos.size >= 1) {
+                            LazyRow (modifier = Modifier.fillMaxHeight(0.3f)){
+                                items(newMarkerPhotos.size) { index ->
+                                    if (index < newMarkerPhotos.size) {
+                                        ImageItem(newMarkerPhotos[index], myViewModel)
+                                    }
+                                }
+                            }
                         }
+
                         Button(onClick = {
                             myViewModel.markerAddition(MarkerData(myTitle, myMarker.position, myDescription, placeType, newMarkerPhotos))
                             myViewModel.setNewMarkerBottomSheet(false)
@@ -136,7 +156,9 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                 Marker(
                     state = MarkerState(position = i.position),
                     title = i.title,
-                    snippet = i.description
+                    snippet = i.description,
+                    icon = createBitmapDescriptor(context, placeTypeIcon)
+
                 )
             }
 
@@ -164,6 +186,14 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             }
         }
     }
+}
+
+
+fun createBitmapDescriptor (context: Context, drawableId: Int) : BitmapDescriptor {
+
+    val bitmap = BitmapFactory.decodeResource(context.resources, drawableId)
+
+    return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
 
 
