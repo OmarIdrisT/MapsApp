@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.MyCamera
 import com.example.mapsapp.model.MarkerData
@@ -62,9 +63,10 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
     val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
-    var showDeletionBottomSheet by remember { mutableStateOf(false) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+    val showMarkerOptionsBottomSheet by myViewModel.showMarkerOptionsBottomSheet.observeAsState(false)
 
+    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     val myTitle: String by myViewModel.markerTitle.observeAsState("")
     val myDescription: String by myViewModel.markerDescription.observeAsState("")
@@ -145,6 +147,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             myViewModel.setNewMarkerBottomSheet(false)
                             myViewModel.changeTitle("")
                             myViewModel.changeDescription("")
+                            myViewModel.placeTypeChange("Sense especificar")
                         }) {
                             Text(text = "Crear marcador")
                         }
@@ -156,30 +159,33 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                 Marker(
                     state = MarkerState(position = i.position),
                     title = i.title,
+                    onInfoWindowClick = {
+                        if (currentRoute == Routes.MapScreen.route) {
+                            myViewModel.chooseMarker(i)
+                            myViewModel.setMarkerOptionsBottomSheet(true)
+                        }
+                    },
                     snippet = i.description,
                     icon = createBitmapDescriptor(context, placeTypeIcon)
 
                 )
             }
 
-            if (showDeletionBottomSheet) {
-                ModalBottomSheet(onDismissRequest = {!showBottomSheet}, sheetState = sheetState) {
+            if (showMarkerOptionsBottomSheet) {
+                ModalBottomSheet(onDismissRequest = {myViewModel.setMarkerOptionsBottomSheet(false)}, sheetState = sheetState) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Text(text = "Vols eliminar el marcador?")
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                            Button(onClick = {
-                                myViewModel.markerDeletion(MarkerData(myTitle, myMarker.position, myDescription, placeType, mutableListOf()))
-                                showDeletionBottomSheet = false
-                            }) {
-                                Text(text = "Si")
-                            }
-                            Button(onClick = {
-                                showDeletionBottomSheet = false
-                            }) {
-                                Text(text = "No")
-                            }
+                        Button(onClick = {
+                            myViewModel.setMarkerOptionsBottomSheet(false)
+                            navigationController.navigate(Routes.DetailScreen.route)
+                        }) {
+                            Text(text = "Detalls marcador")
                         }
-
+                        Button(onClick = {
+                            myViewModel.markerDeletion(myMarker)
+                            myViewModel.setMarkerOptionsBottomSheet(false)
+                        }) {
+                            Text(text = "Eliminar marcador")
+                        }
                     }
 
                 }

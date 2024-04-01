@@ -45,10 +45,17 @@ class MyViewModel {
         else -> R.drawable.defaultplace
     }
 
+
+    private var _actualMarker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
+    var actualMarker = _actualMarker
+
     //Variable que controla el estat del ModalBottomSheet per crear nous marcadors.
     private var _showNewMarkerBottomSheet = MutableLiveData<Boolean>(false)
     val showNewMarkerBottomSheet = _showNewMarkerBottomSheet
 
+    //Variable que controla el estat del ModalBottomSheet per eliminar marcadors.
+    private var _showMarkerOptionsBottomSheet = MutableLiveData<Boolean>(false)
+    val showMarkerOptionsBottomSheet = _showMarkerOptionsBottomSheet
 
     /*Variable que indica si és la primera vegada que accedim al mapa, per així fer que a detalls ens
     recondueixi a la localització del marcador.*/
@@ -79,6 +86,7 @@ class MyViewModel {
         _marker.value!!.position = newPosition
     }
 
+
     //Funció que modifica el títol del marcador
 
     fun changeTitle(text: String) {
@@ -93,6 +101,11 @@ class MyViewModel {
     //Funció que permet controlar l'estat del "NewMarkerBottomSheet"
     fun setNewMarkerBottomSheet(state: Boolean) {
         _showNewMarkerBottomSheet.value = state
+    }
+
+    //Funció que permet controlar l'estat del "MarkerOptionsBottomSheet"
+    fun setMarkerOptionsBottomSheet(state: Boolean) {
+        _showMarkerOptionsBottomSheet.value = state
     }
 
     //Funció que afegeix un nou marcador a la llista de marcadors.
@@ -152,7 +165,7 @@ class MyViewModel {
         _newMarkerPhotos.value!!.add(photo)
     }
 
-    //Funció que neteja la llista de fotos del marcador nou en cas de sortir del BottomSheet
+    //Funció que neteja la llista de fotos del marcador nou en cas de sortir del BottomSheet o de crear un marcador
     fun clearPhotosFromNewMarker() {
         _newMarkerPhotos.value!!.clear()
     }

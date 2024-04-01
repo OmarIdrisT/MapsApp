@@ -157,8 +157,6 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
 
 @Composable
 fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
         containerColor = Color.Black,
         topBar = {MyTopAppBar(myViewModel, state)}
