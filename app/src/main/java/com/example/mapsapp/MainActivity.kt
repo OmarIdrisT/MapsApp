@@ -200,40 +200,6 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
 }
 
 @Composable
-fun myDropDownMenu(myViewModel: MyViewModel) {
-    var expanded by remember { mutableStateOf(false) }
-    val opcions = listOf("Sense especificar", "Cafeteria", "Restaurant", "Entreteniment", "Botiga", "Transport")
-
-    Column (modifier = Modifier.padding(20.dp)) {
-        OutlinedTextField(
-            value = myViewModel.placeType,
-            onValueChange = { myViewModel.placeTypeChange(it) },
-            enabled = false,
-            readOnly = true,
-            textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
-            modifier = Modifier
-                .clickable { expanded = true }
-                .fillMaxWidth(0.6f)
-                .height(60.dp)
-                .background(color = Color.Transparent)
-                .align(alignment = Alignment.CenterHorizontally)
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            opcions.forEach { dificultad ->
-                DropdownMenuItem(modifier = Modifier.background(color = Color.Black) ,text = { Text(text = dificultad, style = TextStyle(color = Color.White)) }, onClick = {
-                    expanded = false
-                    myViewModel.placeTypeChange(dificultad)
-                })
-            }
-        }
-    }
-}
-
-@Composable
 fun MyCamera(navigationController: NavController, myViewModel: MyViewModel) {
     val context = LocalContext.current
     val isCameraPermissionGranted by myViewModel.cameraPermissionGranted.observeAsState(false)

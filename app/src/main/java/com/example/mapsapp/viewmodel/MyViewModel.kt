@@ -1,14 +1,9 @@
 package com.example.mapsapp.viewmodel
 
-import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.MutableLiveData
 import com.example.mapsapp.R
 import com.example.mapsapp.model.MarkerData
@@ -33,17 +28,10 @@ class MyViewModel {
     var markerDescription = _markerDescription
 
     //Tipus de localització dels marcadors
-    var placeType : String by mutableStateOf("Sense especificar")
+    var placeType = MutableLiveData("Sense especificar")
         private set
 
-    val placeTypeIcon = when (placeType) {
-        "Cafeteria" -> R.drawable.cafeteria
-        "Restaurant" -> R.drawable.restaurants
-        "Entreteniment" -> R.drawable.entertainment
-        "Botiga" -> R.drawable.shopping
-        "Transport" -> R.drawable.transport
-        else -> R.drawable.defaultplace
-    }
+    var placeTypeIcon : Int by mutableStateOf(R.drawable.defaultplace)
 
 
     private var _actualMarker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
@@ -124,7 +112,18 @@ class MyViewModel {
 
     //Funció que permet escollir el tipus de localització del marcador.
     fun placeTypeChange (valor : String) {
-        placeType = valor
+        placeType.value = valor
+    }
+
+    fun placeTypeIconChange (placeType: String) {
+        placeTypeIcon = when (placeType) {
+            "Cafeteria" -> R.drawable.cafeteria
+            "Restaurant" -> R.drawable.restaurants
+            "Entreteniment" -> R.drawable.entertainment
+            "Botiga" -> R.drawable.shopping
+            "Transport" -> R.drawable.transport
+            else -> R.drawable.defaultplace
+        }
     }
 
     //Funció que permet assignar a la variable marker el valor del marcador que volem mostrar a detalls.

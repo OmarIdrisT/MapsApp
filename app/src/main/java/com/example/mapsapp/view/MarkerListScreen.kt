@@ -2,8 +2,10 @@ package com.example.mapsapp.view
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -59,7 +62,7 @@ fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyVi
                 navController.navigate(Routes.DetailScreen.route)
             }
         ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
                         .padding(16.dp)
@@ -68,7 +71,7 @@ fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyVi
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${marker.title}",
+                        text = "${marker.title} \n${marker.type}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 20.sp,
                         color = Color.White,
