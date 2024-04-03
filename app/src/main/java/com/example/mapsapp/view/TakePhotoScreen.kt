@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,9 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.mapsapp.PermissionDeclinedScreen
+import com.example.mapsapp.R
+import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -55,14 +62,32 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
-
     Camera(navigationController, myViewModel)
 }
 
 @Composable
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
     val comingFromMap by remember { mutableStateOf(myViewModel.comingFromMap) }
+
     val context = LocalContext.current
+
+    val img:Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
+    var bitmap by remember { mutableStateOf(img) }
+    val launchImage= rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = {
+            if (Build.VERSION.SDK_INT<28){
+                bitmap= MediaStore.Images.Media.getBitmap(context.contentResolver,it)
+            }else{
+                val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
+                source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
+                myViewModel.addPhotoToMarker(bitmap!!)
+                navigationController.navigate(Routes.DetailScreen.route)
+                Log.e("IMAGEN","si va")
+            }
+        }
+    )
+
     val controller = remember {
         LifecycleCameraController(context).apply {
             CameraController.IMAGE_CAPTURE
@@ -109,7 +134,7 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { launchImage.launch("*images/*") }) {
                     Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
                 }
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -53,17 +54,26 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
             }
         }
         item {
-            Text(text = myMarker.title, color = Color.White)
+            Text(
+                text = myMarker.title,
+                color = Color.White,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
         item {
-            Text(text = "${myMarker.position}", color = Color.White)
+            Text(text = myMarker.type,
+                color = Color.White,
+                fontSize = 15.sp,
+            )
         }
         item {
-            Text(text = myMarker.description, color = Color.White)
+            Text(
+                text = myMarker.description,
+                color = Color.White
+            )
         }
-        item {
-            Text(text = myMarker.type, color = Color.White)
-        }
+
         item {
             LazyRow {
                 items(myMarker.images.size + 1) { index ->

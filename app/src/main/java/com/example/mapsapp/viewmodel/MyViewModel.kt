@@ -31,7 +31,6 @@ class MyViewModel {
     var placeType = MutableLiveData("Sense especificar")
         private set
 
-    var placeTypeIcon : Int by mutableStateOf(R.drawable.defaultplace)
 
 
     private var _actualMarker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
@@ -115,8 +114,8 @@ class MyViewModel {
         placeType.value = valor
     }
 
-    fun placeTypeIconChange (placeType: String) {
-        placeTypeIcon = when (placeType) {
+    fun placeTypeIconChange (placeType: String) : Int {
+        return when (placeType) {
             "Cafeteria" -> R.drawable.cafeteria
             "Restaurant" -> R.drawable.restaurants
             "Entreteniment" -> R.drawable.entertainment
@@ -128,7 +127,7 @@ class MyViewModel {
 
     //Funció que permet assignar a la variable marker el valor del marcador que volem mostrar a detalls.
     fun chooseMarker (actualMarker: MarkerData) {
-        _marker.value = actualMarker
+        _actualMarker.value = actualMarker
     }
 
     //Funció que torna a false mapaInicial un cop hem accedit al mapa per primer cop

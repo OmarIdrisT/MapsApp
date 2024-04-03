@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,13 +19,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Green
+import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +53,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.MyCamera
+import com.example.mapsapp.R
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -66,13 +75,12 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
-    val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
+    val actualMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
     val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
-    val placeType: String by myViewModel.placeType.observeAsState("Sense especificar")
-    val placeTypeIcon by remember { mutableStateOf(myViewModel.placeTypeIcon) }
 
     val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
+    val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
     val showMarkerOptionsBottomSheet by myViewModel.showMarkerOptionsBottomSheet.observeAsState(false)
 
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
@@ -80,6 +88,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
     val myTitle: String by myViewModel.markerTitle.observeAsState("")
     val myDescription: String by myViewModel.markerDescription.observeAsState("")
+    val placeType: String by myViewModel.placeType.observeAsState("Sense especificar")
 
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -129,15 +138,20 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                     myViewModel.clearPhotosFromNewMarker()
                     myViewModel.setNewMarkerBottomSheet(false)},
                     sheetState = sheetState,
-                    modifier = Modifier.zIndex(500f)) {
+                    modifier = Modifier.zIndex(500f),
+                    containerColor = Color.Black,
+                    contentColor = Color.White) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text(text = "Nom del marcador:")
                         TextField(
+                            modifier = Modifier.background(Color.White),
                             value = myTitle,
                             onValueChange = { myViewModel.changeTitle(it) }
                         )
+                        Spacer(Modifier.height(15.dp))
                         Text(text = "Descripció")
                         TextField(
+                            modifier = Modifier.background(Color.White),
                             value = myDescription,
                             onValueChange = {myViewModel.changeDescription(it)}
                         )
@@ -161,6 +175,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             myViewModel.changeTitle("")
                             myViewModel.changeDescription("")
                             myViewModel.placeTypeChange("Sense especificar")
+                            myViewModel.clearPhotosFromNewMarker()
                         }) {
                             Text(text = "Crear marcador")
                         }
@@ -169,6 +184,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                 }
             }
             for (i in llistaMarkers){
+                val icon = createBitmapDescriptor(context, myViewModel.placeTypeIconChange(i.type))
                 Marker(
                     state = MarkerState(position = i.position),
                     title = i.title,
@@ -179,13 +195,13 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                         }
                     },
                     snippet = i.description,
-                    icon = createBitmapDescriptor(context, placeTypeIcon)
+                    icon = icon
 
                 )
             }
 
             if (showMarkerOptionsBottomSheet) {
-                ModalBottomSheet(onDismissRequest = {myViewModel.setMarkerOptionsBottomSheet(false)}, sheetState = sheetState) {
+                ModalBottomSheet(onDismissRequest = {myViewModel.setMarkerOptionsBottomSheet(false)}, sheetState = sheetState, containerColor = Color.Black, contentColor = Color.White) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Button(onClick = {
                             myViewModel.setMarkerOptionsBottomSheet(false)
@@ -208,6 +224,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun myDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
@@ -225,7 +242,7 @@ fun myDropDownMenu(myViewModel: MyViewModel) {
                 .clickable { expanded = true }
                 .fillMaxWidth(0.6f)
                 .height(60.dp)
-                .background(color = Color.Transparent)
+                .background(color = Color.White)
                 .align(alignment = Alignment.CenterHorizontally)
         )
 
