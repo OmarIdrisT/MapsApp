@@ -15,6 +15,10 @@ class MyViewModel {
     private var _marker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     var marker = _marker
 
+    //Variable per controlar la posició
+    private var _markPosition = MutableLiveData(LatLng(41.4534265, 2.1837151))
+    var markPosition = _markPosition
+
     //Llista de marcadors
     private val _markerList = MutableLiveData<MutableList<MarkerData>>()
     val markerList = _markerList
@@ -32,7 +36,7 @@ class MyViewModel {
         private set
 
 
-
+    //Variable per controlar el marcador amb el que s'està treballant
     private var _actualMarker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     var actualMarker = _actualMarker
 
@@ -70,7 +74,7 @@ class MyViewModel {
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
-        _marker.value!!.position = newPosition
+        _markPosition.value = newPosition
     }
 
 
@@ -154,8 +158,12 @@ class MyViewModel {
     }
 
     //Funció que afegeix fotos al marker des de la pantalla de detalls.
-    fun addPhotoToMarker(photo: Bitmap) {
-        _marker.value!!.images.add(photo)
+    fun addPhotoToMarker(marker: MarkerData, photo: Bitmap) {
+        val markers = _markerList.value.orEmpty().toMutableList()
+        val updatedMarker = marker.copy(images = marker.images.toMutableList().apply { add(photo) })
+        markers.remove(marker)
+        markers.add(updatedMarker)
+        _markerList.value = markers
     }
 
     //Funció que afegeix fotos al marker des del mapa.

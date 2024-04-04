@@ -77,7 +77,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
     val actualMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
     val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
-
+    val markPosition: LatLng by myViewModel.markPosition.observeAsState(LatLng(41.4534265, 2.1837151))
     val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
     val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
@@ -106,7 +106,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                 deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
             }
             else {
-                deviceLatLng = LatLng(myMarker.position.latitude, myMarker.position.longitude)
+                deviceLatLng = LatLng(actualMarker.position.latitude, actualMarker.position.longitude)
             }
             cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
             myViewModel.changeMapaInicial()
@@ -128,9 +128,10 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             properties = MapProperties(isMyLocationEnabled = true, isBuildingEnabled = true),
             onMapClick = {},
             onMapLongClick = {
-                myViewModel.positionChange(it)
-                myViewModel.setNewMarkerBottomSheet(true)
-
+                if (currentRoute == Routes.MapScreen.route) {
+                    myViewModel.positionChange(it)
+                    myViewModel.setNewMarkerBottomSheet(true)
+                }
             }
         ) {
             if (showNewMarkerBottomSheet) {
@@ -169,7 +170,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                         Log.i("estado", sheetState.currentValue.name)
 
                         Button(onClick = {
-                            myViewModel.markerAddition(MarkerData(myTitle, myMarker.position, myDescription, placeType, newMarkerPhotos))
+                            myViewModel.markerAddition(MarkerData(myTitle, markPosition, myDescription, placeType, newMarkerPhotos))
                             myViewModel.placeTypeIconChange(placeType)
                             myViewModel.setNewMarkerBottomSheet(false)
                             myViewModel.changeTitle("")
@@ -210,7 +211,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             Text(text = "Detalls marcador")
                         }
                         Button(onClick = {
-                            myViewModel.markerDeletion(myMarker)
+                            myViewModel.markerDeletion(actualMarker)
                             myViewModel.setMarkerOptionsBottomSheet(false)
                         }) {
                             Text(text = "Eliminar marcador")

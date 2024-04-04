@@ -53,11 +53,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.mapsapp.PermissionDeclinedScreen
 import com.example.mapsapp.R
+import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -68,9 +70,8 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
 @Composable
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
     val comingFromMap by remember { mutableStateOf(myViewModel.comingFromMap) }
-
     val context = LocalContext.current
-
+    val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     val img:Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
     var bitmap by remember { mutableStateOf(img) }
     val launchImage= rememberLauncherForActivityResult(
@@ -81,7 +82,7 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
             }else{
                 val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
                 source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
-                myViewModel.addPhotoToMarker(bitmap!!)
+                myViewModel.addPhotoToMarker(myMarker, bitmap!!)
                 navigationController.navigate(Routes.DetailScreen.route)
                 Log.e("IMAGEN","si va")
             }
@@ -124,7 +125,7 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                 IconButton(onClick = {
                     takePhoto(context, controller) {photo ->
                         if (!comingFromMap) {
-                            myViewModel.addPhotoToMarker(photo)
+                            myViewModel.addPhotoToMarker(myMarker, photo)
                         }
                         else {
                             myViewModel.addPhotosToNewMarker(photo)
