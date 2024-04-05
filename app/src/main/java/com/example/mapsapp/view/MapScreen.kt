@@ -1,17 +1,20 @@
 package com.example.mapsapp.view
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,17 +22,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,19 +40,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
-import com.example.mapsapp.MyCamera
-import com.example.mapsapp.R
+import com.example.mapsapp.PermissionDeclinedScreen
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -106,10 +103,16 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                 deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
             }
             else {
-                deviceLatLng = LatLng(actualMarker.position.latitude, actualMarker.position.longitude)
+                if (actualMarker.position != LatLng(41.4534265, 2.1837151)) {
+                    deviceLatLng = LatLng(actualMarker.position.latitude, actualMarker.position.longitude)
+                }
+                else {
+                    deviceLatLng = LatLng(markPosition.latitude, markPosition.longitude)
+                }
+
             }
             cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
-            myViewModel.changeMapaInicial()
+            myViewModel.changeMapaInicial(false)
         } else {
 
             Log.e("Error", "Exception: %s", task.exception)
@@ -157,7 +160,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             onValueChange = {myViewModel.changeDescription(it)}
                         )
                         myDropDownMenu(myViewModel = myViewModel)
-                        MyCamera(myViewModel = myViewModel, navigationController = navigationController)
+                        MyCameraFromMap(myViewModel = myViewModel, navigationController = navigationController)
                         if (newMarkerPhotos.size >= 1) {
                             LazyRow (modifier = Modifier.fillMaxHeight(0.3f)){
                                 items(newMarkerPhotos.size) { index ->
@@ -167,16 +170,17 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                                 }
                             }
                         }
-                        Log.i("estado", sheetState.currentValue.name)
 
                         Button(onClick = {
-                            myViewModel.markerAddition(MarkerData(myTitle, markPosition, myDescription, placeType, newMarkerPhotos))
+                            val newMarker = MarkerData(myTitle, markPosition, myDescription, placeType, mutableListOf())
+                            newMarker.images.addAll(newMarkerPhotos)
+                            myViewModel.markerAddition(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
+                            myViewModel.clearPhotosFromNewMarker()
                             myViewModel.setNewMarkerBottomSheet(false)
                             myViewModel.changeTitle("")
                             myViewModel.changeDescription("")
                             myViewModel.placeTypeChange("Sense especificar")
-                            myViewModel.clearPhotosFromNewMarker()
                         }) {
                             Text(text = "Crear marcador")
                         }
@@ -261,6 +265,48 @@ fun myDropDownMenu(myViewModel: MyViewModel) {
     }
 }
 
+
+@Composable
+fun MyCameraFromMap(navigationController: NavController, myViewModel: MyViewModel) {
+    val context = LocalContext.current
+    val isCameraPermissionGranted by myViewModel.cameraPermissionGranted.observeAsState(false)
+    val shouldShowPermissionRationale by myViewModel.shouldShowPermissionRationale.observeAsState(false)
+    val showPermissionDenied by myViewModel.showPermissionDenied.observeAsState(false)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                myViewModel.setCameraPermissionGranted(true)
+            } else {
+                myViewModel.setShouldShowPermissionRationale(
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.CAMERA
+                    )
+                )
+                if (!shouldShowPermissionRationale) {
+                    Log.i("CameraScreen", "No podemos volver a pedir permisos")
+                    myViewModel.setShowPermissionDenied(true)
+                }
+            }
+        }
+    )
+
+    Button(onClick = {
+        if (!isCameraPermissionGranted) {
+            launcher.launch(Manifest.permission.CAMERA)
+        } else {
+            myViewModel.changeComingFromMap(true)
+            navigationController.navigate(Routes.TakePhotoScreen.route)
+        }
+    }) {
+        Text(text = "Take photo")
+    }
+    if(showPermissionDenied) {
+        PermissionDeclinedScreen()
+    }
+}
 
 fun createBitmapDescriptor (context: Context, drawableId: Int) : BitmapDescriptor {
 

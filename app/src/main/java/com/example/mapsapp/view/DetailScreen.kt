@@ -1,9 +1,15 @@
 package com.example.mapsapp.view
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.graphics.Bitmap
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,12 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.mapsapp.PermissionDeclinedScreen
 import com.example.mapsapp.model.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -38,7 +47,7 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) {
     val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
-
+    Log.i("objeto detall", myMarker.images.toString())
     LazyColumn (
         modifier = Modifier
             .padding(8.dp)
@@ -80,15 +89,7 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
                     if (index < myMarker.images.size) {
                         ImageItem(myMarker.images[index], myViewModel)
                     } else {
-                        Button(
-                            onClick = {
-                                myViewModel.changeComingFromMap(false)
-                                navigationController.navigate(Routes.TakePhotoScreen.route)
-                            },
-                            modifier = Modifier.size(100.dp)
-                        ) {
-                            Text("+", color = Color.White, fontSize = 40.sp)
-                        }
+                        MyCameraFromDetails(navigationController, myViewModel)
                     }
                 }
             }
@@ -119,5 +120,52 @@ fun ImageItem(markerPhoto: Bitmap, myViewModel: MyViewModel) {
                 modifier = Modifier.size(100.dp)
             )
         }
+    }
+}
+
+
+@Composable
+fun MyCameraFromDetails(navigationController: NavController, myViewModel: MyViewModel) {
+    val context = LocalContext.current
+    val isCameraPermissionGranted by myViewModel.cameraPermissionGranted.observeAsState(false)
+    val shouldShowPermissionRationale by myViewModel.shouldShowPermissionRationale.observeAsState(false)
+    val showPermissionDenied by myViewModel.showPermissionDenied.observeAsState(false)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                myViewModel.setCameraPermissionGranted(true)
+            } else {
+                myViewModel.setShouldShowPermissionRationale(
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.CAMERA
+                    )
+                )
+                if (!shouldShowPermissionRationale) {
+                    Log.i("CameraScreen", "No podemos volver a pedir permisos")
+                    myViewModel.setShowPermissionDenied(true)
+                }
+            }
+        }
+    )
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .clickable {
+                if (!isCameraPermissionGranted) {
+                    launcher.launch(Manifest.permission.CAMERA)
+                } else {
+                    myViewModel.changeComingFromMap(false)
+                    navigationController.navigate(Routes.TakePhotoScreen.route)
+                }
+            },
+        contentAlignment = Alignment.Center
+        ) {
+         Text(text = "+", color = Color.White)
+        }
+    if(showPermissionDenied) {
+        PermissionDeclinedScreen()
     }
 }

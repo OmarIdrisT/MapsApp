@@ -1,6 +1,7 @@
 package com.example.mapsapp.viewmodel
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -101,6 +102,7 @@ class MyViewModel {
 
     //Funció que afegeix un nou marcador a la llista de marcadors.
     fun markerAddition(newMarker: MarkerData) {
+        Log.i("objeto", newMarker.toString())
         val markers = _markerList.value.orEmpty().toMutableList()
         markers.add(newMarker)
         _markerList.value = markers
@@ -135,8 +137,8 @@ class MyViewModel {
     }
 
     //Funció que torna a false mapaInicial un cop hem accedit al mapa per primer cop
-    fun changeMapaInicial() {
-        mapaInicial = false
+    fun changeMapaInicial(value: Boolean) {
+        mapaInicial = value
     }
 
     //Funció que modifica el valor de "comingFromMap" per indicar si la càmera s'ha obert o no des del mapa.
@@ -161,6 +163,7 @@ class MyViewModel {
     fun addPhotoToMarker(marker: MarkerData, photo: Bitmap) {
         val markers = _markerList.value.orEmpty().toMutableList()
         val updatedMarker = marker.copy(images = marker.images.toMutableList().apply { add(photo) })
+        chooseMarker(updatedMarker)
         markers.remove(marker)
         markers.add(updatedMarker)
         _markerList.value = markers
