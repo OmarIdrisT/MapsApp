@@ -1,19 +1,29 @@
 package com.example.mapsapp.viewmodel
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
+import com.example.mapsapp.Firebase.FirebaseModels.User
+import com.example.mapsapp.Firebase.FirebaseRepository
 import com.example.mapsapp.R
 import com.example.mapsapp.model.MarkerData
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.logging.SimpleFormatter
 
 class MyViewModel {
 
     //Variable per cada marcador individual
-    private var _marker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
+    private var _marker =
+        MutableLiveData(MarkerData("ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
     var marker = _marker
 
     //Variable per controlar la posició
@@ -38,7 +48,8 @@ class MyViewModel {
 
 
     //Variable per controlar el marcador amb el que s'està treballant
-    private var _actualMarker = MutableLiveData(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
+    private var _actualMarker =
+        MutableLiveData(MarkerData("ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
     var actualMarker = _actualMarker
 
     //Variable que controla el estat del ModalBottomSheet per crear nous marcadors.
@@ -55,7 +66,7 @@ class MyViewModel {
         private set
 
     //Variabla que controla si s'accedeix a la càmera desde el mapa o desde detalls.
-    var comingFromMap : Boolean by mutableStateOf(false)
+    var comingFromMap: Boolean by mutableStateOf(false)
         private set
 
     //Llista on s'emmagatzemen les fotos fetes abans de crear el marcador.
@@ -72,6 +83,22 @@ class MyViewModel {
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
 
+    //Llista usuaris
+    private val _userList = MutableLiveData<MutableList<User>>(mutableListOf())
+    val userList = _userList
+
+    //Actual user
+    private val _actualUser = MutableLiveData<User>()
+    val actualUser = _actualUser
+
+    //Age && userName
+    private val _age = MutableLiveData<String>()
+    val age = _age
+    private val _userName = MutableLiveData<String>()
+    val userName = _userName
+
+    //Uri imatges
+    val uri = { mutableStateOf(Uri.parse("")) }
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
@@ -116,11 +143,11 @@ class MyViewModel {
     }
 
     //Funció que permet escollir el tipus de localització del marcador.
-    fun placeTypeChange (valor : String) {
+    fun placeTypeChange(valor: String) {
         placeType.value = valor
     }
 
-    fun placeTypeIconChange (placeType: String) : Int {
+    fun placeTypeIconChange(placeType: String): Int {
         return when (placeType) {
             "Cafeteria" -> R.drawable.cafeteria
             "Restaurant" -> R.drawable.restaurants
@@ -132,7 +159,7 @@ class MyViewModel {
     }
 
     //Funció que permet assignar a la variable marker el valor del marcador que volem mostrar a detalls.
-    fun chooseMarker (actualMarker: MarkerData) {
+    fun chooseMarker(actualMarker: MarkerData) {
         _actualMarker.value = actualMarker
     }
 
@@ -155,7 +182,7 @@ class MyViewModel {
         _shouldShowPermissionRationale.value = should
     }
 
-    fun setShowPermissionDenied(denied : Boolean) {
+    fun setShowPermissionDenied(denied: Boolean) {
         _showPermissionDenied.value = denied
     }
 
@@ -179,4 +206,52 @@ class MyViewModel {
         _newMarkerPhotos.value!!.clear()
     }
 
+    //Firebase
+
+    val repository = FirebaseRepository()
+
+    //Firebase getUsers()
+    fun getUsers() {
+        repository.getUsers().addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.e("Firestore error", error.message.toString())
+                return@addSnapshotListener
+            }
+            val tempList = mutableListOf<User>()
+            for (dc: DocumentChange in value?.documentChanges!!) {
+                if (dc.type == DocumentChange.Type.ADDED) {
+                    val newUser = dc.document.toObject(User::class.java)
+                    newUser.userId = dc.document.id
+                    tempList.add(newUser)
+                }
+            }
+            _userList.value = tempList
+        }
+    }
+
+    //Firebase getUser()
+    fun getUser(userId: String) {
+        repository.getUser(userId).addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.e("UserRepository", "Listen failted", error)
+                return@addSnapshotListener
+            }
+            if (value != null && value.exists()) {
+                val user = value.toObject(User::class.java)
+                if (user != null) {
+                    user.userId = userId
+                }
+                _actualUser.value = user
+                _userName.value = _actualUser.value!!.userName
+                _age.value = _actualUser.value!!.age.toString()
+            } else {
+                Log.e("UserRepository", "Current data: null")
+            }
+        }
+    }
+
+    //Pujar imatge
+    fun uploadImage(img:Uri){
+        repository.uploadImage(img)
+    }
 }

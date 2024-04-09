@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
@@ -74,14 +75,21 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
     val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     val img:Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
     var bitmap by remember { mutableStateOf(img) }
+    var uri = Uri.parse("")
     val launchImage= rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
             if (Build.VERSION.SDK_INT<28){
                 bitmap= MediaStore.Images.Media.getBitmap(context.contentResolver,it)
+                if (it != null) {
+                    myViewModel.uploadImage(it)
+                }
             }else{
                 val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
                 source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
+                if (it != null) {
+                    myViewModel.uploadImage(it)
+                }
                 myViewModel.addPhotoToMarker(myMarker, bitmap!!)
                 navigationController.navigate(Routes.DetailScreen.route)
                 Log.e("IMAGEN","si va")
@@ -130,7 +138,6 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                         else {
                             myViewModel.addPhotosToNewMarker(photo)
                         }
-
                     }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
