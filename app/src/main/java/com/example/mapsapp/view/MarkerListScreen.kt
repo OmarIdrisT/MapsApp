@@ -2,10 +2,8 @@ package com.example.mapsapp.view
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -40,7 +38,9 @@ import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MarkerListSCreen(myViewModel: MyViewModel, navController: NavController) {
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(
+        MarkerData("", "","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())
+    ))
     LazyColumn() {
         items(llistaMarkers.size) {
             CardItem(marker = llistaMarkers[it], navController, myViewModel)

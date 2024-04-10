@@ -1,6 +1,5 @@
 package com.example.mapsapp.viewmodel
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -10,20 +9,19 @@ import androidx.lifecycle.MutableLiveData
 import com.example.mapsapp.Firebase.FirebaseModels.User
 import com.example.mapsapp.Firebase.FirebaseRepository
 import com.example.mapsapp.R
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.logging.SimpleFormatter
 
 class MyViewModel {
 
     //Variable per cada marcador individual
     private var _marker =
-        MutableLiveData(MarkerData("ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
+        MutableLiveData(MarkerData("","","ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
     var marker = _marker
 
     //Variable per controlar la posició
@@ -49,7 +47,7 @@ class MyViewModel {
 
     //Variable per controlar el marcador amb el que s'està treballant
     private var _actualMarker =
-        MutableLiveData(MarkerData("ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
+        MutableLiveData(MarkerData("", "","ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
     var actualMarker = _actualMarker
 
     //Variable que controla el estat del ModalBottomSheet per crear nous marcadors.
@@ -70,7 +68,7 @@ class MyViewModel {
         private set
 
     //Llista on s'emmagatzemen les fotos fetes abans de crear el marcador.
-    private var _newMarkerPhotos = MutableLiveData<MutableList<Bitmap>>(mutableListOf())
+    private var _newMarkerPhotos = MutableLiveData<MutableList<String>>(mutableListOf())
     var newMarkerPhotos = _newMarkerPhotos
 
     //Càmera
@@ -187,7 +185,7 @@ class MyViewModel {
     }
 
     //Funció que afegeix fotos al marker des de la pantalla de detalls.
-    fun addPhotoToMarker(marker: MarkerData, photo: Bitmap) {
+    fun addPhotoToMarker(marker: MarkerData, photo: String) {
         val markers = _markerList.value.orEmpty().toMutableList()
         val updatedMarker = marker.copy(images = marker.images.toMutableList().apply { add(photo) })
         chooseMarker(updatedMarker)
@@ -197,7 +195,7 @@ class MyViewModel {
     }
 
     //Funció que afegeix fotos al marker des del mapa.
-    fun addPhotosToNewMarker(photo: Bitmap) {
+    fun addPhotosToNewMarker(photo: String) {
         _newMarkerPhotos.value!!.add(photo)
     }
 
@@ -251,7 +249,32 @@ class MyViewModel {
     }
 
     //Pujar imatge
-    fun uploadImage(img:Uri){
-        repository.uploadImage(img)
+    fun uploadImage(imageUri: Uri) {
+        val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
+        val now = Date()
+        val fileName = formatter.format(now)
+        val storage = FirebaseStorage.getInstance().getReference("images/$fileName")
+        storage.putFile(imageUri)
+            .addOnSuccessListener {
+                Log.i("IMAGE UPLOAD", "Image uploaded successfully")
+                storage.downloadUrl.addOnSuccessListener {
+                    Log.i("IMAGEN", it.toString())
+                    if (!comingFromMap) {
+                        addPhotoToMarker(actualMarker.value!!, it.toString())
+                    }
+                    else {
+                        newMarkerPhotos.value!!.add(it.toString())
+                    }
+
+                }
+            }
+            .addOnFailureListener {
+                Log.i("IMAGE UPLOAD", "Image upload failed")
+            }
+    }
+
+    fun addMarkerToFirebase(marker: MarkerData) {
+        val repository = FirebaseRepository()
+        repository.addMarker(marker)
     }
 }

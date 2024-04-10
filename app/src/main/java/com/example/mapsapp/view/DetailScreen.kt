@@ -3,7 +3,6 @@ package com.example.mapsapp.view
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -38,7 +36,7 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.PermissionDeclinedScreen
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -46,7 +44,7 @@ import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) {
-    val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
+    val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     Log.i("objeto detall", myMarker.images.toString())
     LazyColumn (
         modifier = Modifier
@@ -101,7 +99,7 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
 @OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-fun ImageItem(markerPhoto: Bitmap, myViewModel: MyViewModel) {
+fun ImageItem(markerPhoto: String, myViewModel: MyViewModel) {
     Box(modifier = Modifier
         .padding(8.dp)
         .fillMaxSize(0.9f),

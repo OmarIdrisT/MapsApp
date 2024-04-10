@@ -1,7 +1,5 @@
 package com.example.mapsapp.view
 
-import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -31,11 +29,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -47,19 +42,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.mapsapp.PermissionDeclinedScreen
 import com.example.mapsapp.R
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -70,12 +61,10 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
 
 @Composable
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
-    val comingFromMap by remember { mutableStateOf(myViewModel.comingFromMap) }
     val context = LocalContext.current
-    val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     val img:Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
     var bitmap by remember { mutableStateOf(img) }
-    var uri = Uri.parse("")
+    Uri.parse("")
     val launchImage= rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = {
@@ -90,7 +79,6 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                 if (it != null) {
                     myViewModel.uploadImage(it)
                 }
-                myViewModel.addPhotoToMarker(myMarker, bitmap!!)
                 navigationController.navigate(Routes.DetailScreen.route)
                 Log.e("IMAGEN","si va")
             }
@@ -131,14 +119,7 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
                 }
                 IconButton(onClick = {
-                    takePhoto(context, controller) {photo ->
-                        if (!comingFromMap) {
-                            myViewModel.addPhotoToMarker(myMarker, photo)
-                        }
-                        else {
-                            myViewModel.addPhotosToNewMarker(photo)
-                        }
-                    }
+                    takePhoto(context, controller) {}
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
                 }

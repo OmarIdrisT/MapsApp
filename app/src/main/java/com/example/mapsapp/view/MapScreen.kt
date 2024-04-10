@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.util.Log
@@ -51,7 +50,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.PermissionDeclinedScreen
-import com.example.mapsapp.model.MarkerData
+import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.location.LocationServices
@@ -64,6 +63,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.UUID
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,11 +71,14 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
-    val actualMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(MarkerData("ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())))
+    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
+    val actualMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(
+        MarkerData("", "","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())
+    ))
+    val actualUser by myViewModel.actualUser.observeAsState()
     val markPosition: LatLng by myViewModel.markPosition.observeAsState(LatLng(41.4534265, 2.1837151))
-    val newMarkerPhotos: MutableList<Bitmap> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
+    val newMarkerPhotos: MutableList<String> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
     val showNewMarkerBottomSheet by myViewModel.showNewMarkerBottomSheet.observeAsState(false)
     val showMarkerOptionsBottomSheet by myViewModel.showMarkerOptionsBottomSheet.observeAsState(false)
@@ -172,8 +175,10 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                         }
 
                         Button(onClick = {
-                            val newMarker = MarkerData(myTitle, markPosition, myDescription, placeType, mutableListOf())
+                            Log.i("usuario", actualUser.toString())
+                            val newMarker = MarkerData("1",null, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
+                            myViewModel.addMarkerToFirebase(newMarker)
                             myViewModel.markerAddition(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
                             myViewModel.clearPhotosFromNewMarker()
