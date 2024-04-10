@@ -50,6 +50,13 @@ class FirebaseRepository {
         return database.collection("users").document(userId)
     }
 
+
+
+
+
+
+    //Markers
+
     fun addMarker(marker: MarkerData) {
         database.collection("markers")
             .add(
@@ -62,6 +69,14 @@ class FirebaseRepository {
                     "userId" to marker.userId
                 )
             )
+    }
+
+    fun getMarkers(): CollectionReference {
+        return database.collection("markers")
+    }
+
+    fun deleteMarker(markerId: String) {
+        database.collection("markers").document(markerId).delete()
     }
 }
 

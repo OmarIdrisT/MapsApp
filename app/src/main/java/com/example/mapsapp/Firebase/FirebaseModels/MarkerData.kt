@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class MarkerData(
     val userId: String,
-    val markerId: String?,
+    var markerId: String?,
     val title: String,
     var position: LatLng,
     val description: String,

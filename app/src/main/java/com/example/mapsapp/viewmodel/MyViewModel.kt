@@ -277,4 +277,25 @@ class MyViewModel {
         val repository = FirebaseRepository()
         repository.addMarker(marker)
     }
+
+    fun getMarkers() {
+        repository.getMarkers().addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.e("Firestore error", error.message.toString())
+                return@addSnapshotListener
+            }
+            val tempList = mutableListOf<MarkerData>()
+            for (dc: DocumentChange in value?.documentChanges!!) {
+                if (dc.type == DocumentChange.Type.ADDED) {
+                    val newMarker = dc.document.toObject(MarkerData::class.java)
+                    newMarker.markerId = dc.document.id
+                    tempList.add(newMarker)
+                }
+            }
+            _markerList.value = tempList
+        }
+    }
+    fun deleteMarker(markerId: String) {
+        repository.deleteMarker(markerId)
+    }
 }
