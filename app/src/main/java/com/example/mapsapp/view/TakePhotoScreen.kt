@@ -3,6 +3,7 @@ package com.example.mapsapp.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -13,6 +14,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.impl.utils.MatrixExt.postRotate
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -32,7 +34,6 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,13 +48,8 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.mapsapp.R
-import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
-import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.android.gms.maps.model.LatLng
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyViewModel) {
     Camera(navigationController, myViewModel)
@@ -62,7 +58,7 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
 @Composable
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
     val context = LocalContext.current
-    val img:Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
+    val img: Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
     var bitmap by remember { mutableStateOf(img) }
     Uri.parse("")
     val launchImage= rememberLauncherForActivityResult(
@@ -79,12 +75,10 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                 if (it != null) {
                     myViewModel.uploadImage(it)
                 }
-                navigationController.navigate(Routes.DetailScreen.route)
                 Log.e("IMAGEN","si va")
             }
         }
     )
-
     val controller = remember {
         LifecycleCameraController(context).apply {
             CameraController.IMAGE_CAPTURE
@@ -119,11 +113,16 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
                 }
                 IconButton(onClick = {
-                    takePhoto(context, controller) {}
+                    takePhoto(context, controller) {
+                        val newPhotoUri = myViewModel.bitmapToUri(context, it)
+                        if (newPhotoUri != null) {
+                            myViewModel.uploadImage(newPhotoUri)
+                        }
+                    }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
                 }
-                IconButton(onClick = { launchImage.launch("*images/*") }) {
+                IconButton(onClick = { launchImage.launch("image/*") }) {
                     Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
                 }
 
@@ -139,7 +138,9 @@ private fun takePhoto(context: Context, controller: LifecycleCameraController, o
         object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 super.onCaptureSuccess(image)
-                onPhotoTaken(image.toBitmap())
+                val rotatedPhoto = rotateImageIfNeeded(image.toBitmap(), 90)
+                onPhotoTaken(rotatedPhoto)
+
             }
             override fun onError(exception: ImageCaptureException) {
                 super.onError(exception)
@@ -147,6 +148,15 @@ private fun takePhoto(context: Context, controller: LifecycleCameraController, o
             }
         }
     )
+}
+
+private fun rotateImageIfNeeded(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
+    return if (rotationDegrees != 0) {
+        val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    } else {
+        bitmap
+    }
 }
 
 @Composable

@@ -1,8 +1,6 @@
 package com.example.mapsapp.Firebase.FirebaseModels
 
-import android.graphics.Bitmap
 import com.google.android.gms.maps.model.LatLng
-import java.util.UUID
 
 data class MarkerData(
     val userId: String,

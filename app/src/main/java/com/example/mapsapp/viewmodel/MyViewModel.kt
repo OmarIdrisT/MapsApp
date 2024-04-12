@@ -1,6 +1,10 @@
 package com.example.mapsapp.viewmodel
 
+import android.content.ContentValues
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +17,7 @@ import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.storage.FirebaseStorage
+import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,8 +100,14 @@ class MyViewModel {
     private val _userName = MutableLiveData<String>()
     val userName = _userName
 
-    //Uri imatges
-    val uri = { mutableStateOf(Uri.parse("")) }
+
+    //Authentication
+
+    val _userTextfield = MutableLiveData<String>()
+    val userTextfield = _userTextfield
+
+    val _passTextfield = MutableLiveData<String>()
+    val passTextField = _passTextfield
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
@@ -204,6 +215,27 @@ class MyViewModel {
         _newMarkerPhotos.value!!.clear()
     }
 
+    //Conversor Bitmap a Uri
+    fun bitmapToUri(context: Context, bitmap: Bitmap): Uri? {
+        val filename = "${System.currentTimeMillis()}.jpg"
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.TITLE, filename)
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+        }
+
+        val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        uri?.let {
+            val outstream: OutputStream? = context.contentResolver.openOutputStream(it)
+            outstream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+            outstream?.close()
+        }
+
+        return uri
+    }
+
     //Firebase
 
     val repository = FirebaseRepository()
@@ -297,5 +329,23 @@ class MyViewModel {
     }
     fun deleteMarker(markerId: String) {
         repository.deleteMarker(markerId)
+    }
+
+
+    //Authentication
+
+    //Actualització del textfield del login
+    fun changeUserTextfield(value: String) {
+        _userTextfield.value = value
+    }
+
+    fun changePassTextfield(value: String) {
+        _passTextfield.value = value
+    }
+    fun register(username: String, password: String) {
+        repository.register(username, password)
+    }
+    fun login(username: String?, password: String?) {
+        repository.login(username, password)
     }
 }

@@ -53,6 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.DetailScreen
+import com.example.mapsapp.view.LoginScreen
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListSCreen
 import com.example.mapsapp.view.TakePhotoScreen
@@ -151,6 +152,7 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
                 navController = navController as NavHostController,
                 startDestination = Routes.MapScreen.route
             ) {
+                composable(Routes.LoginScreen.route) { LoginScreen(navController, myViewModel)}
                 composable(Routes.MapScreen.route) { MapScreen(myViewModel, navController) }
                 composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
                 composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
