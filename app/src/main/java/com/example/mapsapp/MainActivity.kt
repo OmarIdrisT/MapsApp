@@ -37,6 +37,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -130,6 +131,19 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                     }
                 }
             )
+            NavigationDrawerItem(
+                colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
+                label = { Text(text = "MyMap", color = Color.White)},
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                    myViewModel.repository.auth.signOut()
+                    myViewModel.changeMapaInicial(true)
+                    myViewModel.isLogged(false)
+                }
+            )
         }
     }) {
         MyScaffold(myViewModel, state, navigationController)
@@ -139,27 +153,33 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
 
 @Composable
 fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavController) {
-    Scaffold(
-        containerColor = Color.Black,
-        topBar = {MyTopAppBar(myViewModel, state)}
-    ) {paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            NavHost(
-                navController = navController as NavHostController,
-                startDestination = Routes.MapScreen.route
+    val isLoggedIn by myViewModel.isLoggedIn.observeAsState(false)
+
+    if (!isLoggedIn) {
+        LoginScreen(navController, myViewModel)
+    }
+    else {
+        Scaffold(
+            containerColor = Color.Black,
+            topBar = {MyTopAppBar(myViewModel, state)}
+        ) {paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                composable(Routes.LoginScreen.route) { LoginScreen(navController, myViewModel)}
-                composable(Routes.MapScreen.route) { MapScreen(myViewModel, navController) }
-                composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
-                composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
-                composable(Routes.DetailScreen.route) { DetailScreen(navController, myViewModel) }
+                NavHost(
+                    navController = navController as NavHostController,
+                    startDestination = Routes.MapScreen.route
+                ) {
+                    composable(Routes.LoginScreen.route) { LoginScreen(navController, myViewModel)}
+                    composable(Routes.MapScreen.route) { MapScreen(myViewModel, navController) }
+                    composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
+                    composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
+                    composable(Routes.DetailScreen.route) { DetailScreen(navController, myViewModel) }
+                }
             }
         }
-
     }
 }
 

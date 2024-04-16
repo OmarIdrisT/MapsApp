@@ -1,4 +1,4 @@
-package com.example.mapsapp.Firebase.FirebaseModels
+package com.example.mapsapp.firebase.firebasemodels
 
 import com.google.android.gms.maps.model.LatLng
 

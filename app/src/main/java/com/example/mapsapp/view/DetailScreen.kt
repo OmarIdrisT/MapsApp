@@ -36,7 +36,7 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.PermissionDeclinedScreen
-import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
+import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.maps.model.LatLng

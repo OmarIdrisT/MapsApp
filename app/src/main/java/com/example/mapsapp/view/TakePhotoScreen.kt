@@ -118,7 +118,7 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
                         if (newPhotoUri != null) {
                             myViewModel.uploadImage(newPhotoUri)
                         }
-                    }
+0                    }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
                 }

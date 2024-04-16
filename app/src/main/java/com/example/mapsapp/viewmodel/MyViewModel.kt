@@ -10,10 +10,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
-import com.example.mapsapp.Firebase.FirebaseModels.User
-import com.example.mapsapp.Firebase.FirebaseRepository
+import com.example.mapsapp.firebase.firebasemodels.User
+import com.example.mapsapp.firebase.FirebaseRepository
 import com.example.mapsapp.R
-import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
+import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.storage.FirebaseStorage
@@ -103,11 +103,15 @@ class MyViewModel {
 
     //Authentication
 
-    val _userTextfield = MutableLiveData<String>()
+    private val _userTextfield = MutableLiveData<String>()
     val userTextfield = _userTextfield
 
-    val _passTextfield = MutableLiveData<String>()
+    private val _passTextfield = MutableLiveData<String>()
     val passTextField = _passTextfield
+
+    private val _isLoggedIn = MutableLiveData<Boolean>()
+    val isLoggedIn = _isLoggedIn
+
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
@@ -348,4 +352,11 @@ class MyViewModel {
     fun login(username: String?, password: String?) {
         repository.login(username, password)
     }
+
+
+    fun isLogged(value: Boolean) {
+        _isLoggedIn.value = value
+    }
+
+
 }

@@ -1,4 +1,4 @@
-package com.example.mapsapp.Firebase.FirebaseModels
+package com.example.mapsapp.firebase.firebasemodels
 
 data class User(
     var userId: String? = null,

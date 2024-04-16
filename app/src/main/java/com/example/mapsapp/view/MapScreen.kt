@@ -50,7 +50,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.PermissionDeclinedScreen
-import com.example.mapsapp.Firebase.FirebaseModels.MarkerData
+import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.android.gms.location.LocationServices
@@ -63,7 +63,6 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.util.UUID
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -143,6 +142,9 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             if (showNewMarkerBottomSheet) {
                 ModalBottomSheet(onDismissRequest = {
                     myViewModel.clearPhotosFromNewMarker()
+                    myViewModel.changeTitle("")
+                    myViewModel.changeDescription("")
+                    myViewModel.placeTypeChange("Sense especificar")
                     myViewModel.setNewMarkerBottomSheet(false)},
                     sheetState = sheetState,
                     modifier = Modifier.zIndex(500f),
@@ -283,6 +285,7 @@ fun MyCameraFromMap(navigationController: NavController, myViewModel: MyViewMode
         onResult = { isGranted ->
             if (isGranted) {
                 myViewModel.setCameraPermissionGranted(true)
+                navigationController.navigate(Routes.TakePhotoScreen.route)
             } else {
                 myViewModel.setShouldShowPermissionRationale(
                     ActivityCompat.shouldShowRequestPermissionRationale(
