@@ -67,7 +67,10 @@ class FirebaseRepository {
             .add(
                 hashMapOf(
                     "title" to marker.title,
-                    "position" to marker.position,
+                    "ubicacion" to hashMapOf(
+                        "latitude" to marker.position.latitude,
+                        "longitude" to marker.position.longitude
+                    ),
                     "description" to marker.description,
                     "type" to marker.type,
                     "images" to marker.images,

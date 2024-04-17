@@ -178,10 +178,9 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
                         Button(onClick = {
                             Log.i("usuario", actualUser.toString())
-                            val newMarker = MarkerData("1",null, myTitle, markPosition, myDescription, placeType, mutableListOf())
+                            val newMarker = MarkerData(myViewModel.repository.userId.value!!,null, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
                             myViewModel.addMarkerToFirebase(newMarker)
-                            myViewModel.markerAddition(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
                             myViewModel.clearPhotosFromNewMarker()
                             myViewModel.setNewMarkerBottomSheet(false)
