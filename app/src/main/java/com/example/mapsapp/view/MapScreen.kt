@@ -97,7 +97,6 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
 
     val mapaInicial by remember { mutableStateOf(myViewModel.mapaInicial) }
-
     locationResult.addOnCompleteListener(context as MainActivity) { task ->
         if (task.isSuccessful) {
             lastKnownLocation = task.result
@@ -181,6 +180,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             val newMarker = MarkerData(myViewModel.repository.userId.value!!,null, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
                             myViewModel.addMarkerToFirebase(newMarker)
+                            myViewModel.markerAddition(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
                             myViewModel.clearPhotosFromNewMarker()
                             myViewModel.setNewMarkerBottomSheet(false)
@@ -194,6 +194,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
                 }
             }
+            myViewModel.getMarkers()
             for (i in llistaMarkers){
                 val icon = createBitmapDescriptor(context, myViewModel.placeTypeIconChange(i.type))
                 Marker(

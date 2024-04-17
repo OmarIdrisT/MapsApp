@@ -102,7 +102,6 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         if (goNext == true) {
                             myViewModel.isLogged(true)
                             myViewModel.getUser(userId!!)
-                            myViewModel.getMarkers()
                             myViewModel.changeUserTextfield("")
                             myViewModel.changePassTextfield("")
                         }

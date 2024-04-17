@@ -59,6 +59,7 @@ fun TakePhotoScreen(navigationController: NavHostController, myViewModel: MyView
 fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
     val context = LocalContext.current
     val img: Bitmap?= ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmap()
+    val comingFromMap by remember { mutableStateOf(myViewModel.comingFromMap) }
     var bitmap by remember { mutableStateOf(img) }
     Uri.parse("")
     val launchImage= rememberLauncherForActivityResult(
@@ -66,13 +67,13 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
         onResult = {
             if (Build.VERSION.SDK_INT<28){
                 bitmap= MediaStore.Images.Media.getBitmap(context.contentResolver,it)
-                if (it != null) {
+                if (it != null && comingFromMap) {
                     myViewModel.uploadImage(it)
                 }
             }else{
                 val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
                 source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
-                if (it != null) {
+                if (it != null && comingFromMap) {
                     myViewModel.uploadImage(it)
                 }
                 Log.e("IMAGEN","si va")
