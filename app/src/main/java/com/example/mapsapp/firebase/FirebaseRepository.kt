@@ -18,9 +18,12 @@ class FirebaseRepository {
     private val _goToNext = MutableLiveData<Boolean>()
     val goToNext = _goToNext
     private val _userId = MutableLiveData<String>()
+    val userId = _userId
     private val _loggedUser = MutableLiveData<String>()
     private val _loginFail = MutableLiveData<Boolean>()
     val loginFail = _loginFail
+    private val _registerFail = MutableLiveData<Boolean>()
+    val registerFail = _registerFail
 
 
     fun addUser(user: User) {
@@ -89,10 +92,12 @@ class FirebaseRepository {
             .addOnCompleteListener {task ->
                 if (task.isSuccessful) {
                     _goToNext.value = true
-                } else {
-                    _goToNext.value = false
-                    Log.d("Error", "Error creating user: ${task.result}")
+                    _registerFail.value = false
                 }
+            }
+            .addOnFailureListener {
+                _goToNext.value = false
+                _registerFail.value = true
             }
     }
 
@@ -104,12 +109,10 @@ class FirebaseRepository {
                     _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
                     _goToNext.value = true
                     _loginFail.value = false
-                } else {
-                    _goToNext.value = false
-                    Log.d("Error", "Error signing in: ${task.result}")
                 }
             }
-            .addOnFailureListener { task ->
+            .addOnFailureListener {
+                _goToNext.value = false
                 _loginFail.value = true
             }
     }

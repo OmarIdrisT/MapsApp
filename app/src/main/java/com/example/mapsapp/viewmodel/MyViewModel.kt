@@ -112,6 +112,9 @@ class MyViewModel {
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn = _isLoggedIn
 
+    private val _registerMode = MutableLiveData<Boolean>()
+    val registerMode = _registerMode
+
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
@@ -202,7 +205,7 @@ class MyViewModel {
     //Funció que afegeix fotos al marker des de la pantalla de detalls.
     fun addPhotoToMarker(marker: MarkerData, photo: String) {
         val markers = _markerList.value.orEmpty().toMutableList()
-        val updatedMarker = marker.copy(images = marker.images.toMutableList().apply { add(photo) })
+        val updatedMarker = MarkerData(marker.userId, marker.markerId, marker.title, marker.position, marker.description, marker.description, marker.images.toMutableList().apply { add(photo) })
         chooseMarker(updatedMarker)
         markers.remove(marker)
         markers.add(updatedMarker)
@@ -323,12 +326,31 @@ class MyViewModel {
             val tempList = mutableListOf<MarkerData>()
             for (dc: DocumentChange in value?.documentChanges!!) {
                 if (dc.type == DocumentChange.Type.ADDED) {
-                    val newMarker = dc.document.toObject(MarkerData::class.java)
-                    newMarker.markerId = dc.document.id
-                    tempList.add(newMarker)
+                    val document = dc.document
+                    val title = document.getString("title") ?: ""
+                    val description = document.getString("description") ?: ""
+                    val ubicacionMap = document.get("ubicacion") as? Map<String, Double>
+                    val position = LatLng(
+                        ubicacionMap?.get("latitude") ?: 0.0,
+                        ubicacionMap?.get("longitude") ?: 0.0
+                    )
+                    val type = document.getString("type") ?: ""
+                    val images =
+                        document.get("images") as? MutableList<String> ?: mutableListOf<String>()
+                    val markerId = document.getString("markerId") ?: ""
+                    val userId = document.getString("userId") ?: ""
+                    val newMark =
+                        MarkerData(userId, markerId, title, position, description, type, images)
+                    tempList.add(newMark)
                 }
             }
-            _markerList.value = tempList
+            val filtredList = mutableListOf<MarkerData>()
+            for (marca in tempList) {
+                if (marca.userId == repository.userId.value) {
+                    filtredList.add(marca)
+                }
+            }
+            _markerList.value = filtredList
         }
     }
     fun deleteMarker(markerId: String) {
@@ -358,5 +380,13 @@ class MyViewModel {
         _isLoggedIn.value = value
     }
 
+    fun changeMode() {
+        if (_registerMode.value == false) {
+            _registerMode.value = true
+        }
+        else {
+            _registerMode.value = false
+        }
+    }
 
 }
