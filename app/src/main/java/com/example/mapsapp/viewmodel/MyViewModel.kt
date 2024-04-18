@@ -103,12 +103,6 @@ class MyViewModel {
 
     //Authentication
 
-    private val _userTextfield = MutableLiveData<String>()
-    val userTextfield = _userTextfield
-
-    private val _passTextfield = MutableLiveData<String>()
-    val passTextField = _passTextfield
-
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn = _isLoggedIn
 
@@ -360,14 +354,6 @@ class MyViewModel {
 
     //Authentication
 
-    //Actualització del textfield del login
-    fun changeUserTextfield(value: String) {
-        _userTextfield.value = value
-    }
-
-    fun changePassTextfield(value: String) {
-        _passTextfield.value = value
-    }
     fun register(username: String, password: String) {
         repository.register(username, password)
     }
