@@ -146,17 +146,9 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                 }
                 if (loginFail == true) {
                     Text(text = "El usuari no existeix. Credencials incorrectes.", color = Color.Red, fontSize = 20.sp)
-                    userTextfield = ""
-                    passTextfield = ""
-                    verifypassTextField = ""
-
                 }
                 if (registerFail == true) {
                     Text(text = "No és possible registrar aquest usuari.", color = Color.Red, fontSize = 20.sp)
-                    userTextfield = ""
-                    passTextfield = ""
-                    verifypassTextField = ""
-
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Text(text = if (registerMode) "Ja tens compte?" else "No tens compte?", color = Color.White)
