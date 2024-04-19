@@ -20,6 +20,7 @@ class FirebaseRepository {
     private val _userId = MutableLiveData<String>()
     val userId = _userId
     private val _loggedUser = MutableLiveData<String>()
+    val loggedUser = _loggedUser
     private val _loginFail = MutableLiveData<Boolean>()
     val loginFail = _loginFail
     private val _registerFail = MutableLiveData<Boolean>()
@@ -94,30 +95,39 @@ class FirebaseRepository {
         _auth.createUserWithEmailAndPassword(username, password)
             .addOnCompleteListener {task ->
                 if (task.isSuccessful) {
-                    _goToNext.value = true
                     _registerFail.value = false
                 }
             }
             .addOnFailureListener {
-                _goToNext.value = false
                 _registerFail.value = true
             }
     }
+
+    fun updateRegisterFail() {
+        _registerFail.value = false
+    }
+
+
 
     fun login(username: String?, password: String?) {
         _auth.signInWithEmailAndPassword(username!!, password!!)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _loginFail.value = false
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
                     _goToNext.value = true
-                    _loginFail.value = false
+                    Log.i("hola", "")
                 }
             }
             .addOnFailureListener {
                 _goToNext.value = false
                 _loginFail.value = true
             }
+    }
+
+    fun updateLoginFail() {
+        _loginFail.value = false
     }
 }
 

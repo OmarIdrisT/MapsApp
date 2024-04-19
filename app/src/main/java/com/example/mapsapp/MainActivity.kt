@@ -101,14 +101,15 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val userName by myViewModel.userName.observeAsState("")
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet (drawerContainerColor = Color.Black) {
-            Text("Username", modifier = Modifier.padding(16.dp), color = Color.White)
+            Text(text = userName , modifier = Modifier.padding(16.dp), color = Color.White)
             HorizontalDivider()
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
-                label = { Text(text = "MyMap", color = Color.White)},
+                label = { Text(text = "Map", color = Color.White)},
                 selected = false,
                 onClick = {
                     scope.launch {

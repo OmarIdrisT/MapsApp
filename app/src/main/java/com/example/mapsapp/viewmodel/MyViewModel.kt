@@ -375,4 +375,14 @@ class MyViewModel {
         }
     }
 
+    fun updateLoginFail() {
+        repository.updateLoginFail()
+    }
+
+    fun updateRegisterFail() {
+        repository.updateRegisterFail()
+    }
+
+
+
 }
