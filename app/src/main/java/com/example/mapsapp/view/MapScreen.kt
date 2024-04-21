@@ -63,6 +63,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.UUID
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +88,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
     val myTitle: String by myViewModel.markerTitle.observeAsState("")
     val myDescription: String by myViewModel.markerDescription.observeAsState("")
-    val placeType: String by myViewModel.placeType.observeAsState("Sense especificar")
+    val placeType: String by myViewModel.placeType.observeAsState("Not specified")
 
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -143,7 +144,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                     myViewModel.clearPhotosFromNewMarker()
                     myViewModel.changeTitle("")
                     myViewModel.changeDescription("")
-                    myViewModel.placeTypeChange("Sense especificar")
+                    myViewModel.placeTypeChange("Not specified")
                     myViewModel.setNewMarkerBottomSheet(false)},
                     sheetState = sheetState,
                     modifier = Modifier.zIndex(500f),
@@ -177,16 +178,16 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
                         Button(onClick = {
                             Log.i("usuario", actualUser.toString())
-                            val newMarker = MarkerData(myViewModel.repository.userId.value!!,null, myTitle, markPosition, myDescription, placeType, mutableListOf())
+                            val id= UUID.randomUUID().toString()
+                            val newMarker = MarkerData(myViewModel.repository.userId.value!!,id, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
                             myViewModel.addMarkerToFirebase(newMarker)
-                            myViewModel.markerAddition(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
                             myViewModel.clearPhotosFromNewMarker()
                             myViewModel.setNewMarkerBottomSheet(false)
                             myViewModel.changeTitle("")
                             myViewModel.changeDescription("")
-                            myViewModel.placeTypeChange("Sense especificar")
+                            myViewModel.placeTypeChange("Not specified")
                         }) {
                             Text(text = "Crear marcador")
                         }
@@ -222,7 +223,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             Text(text = "Detalls marcador")
                         }
                         Button(onClick = {
-                            myViewModel.markerDeletion(actualMarker)
+                            myViewModel.deleteMarker(actualMarker)
                             myViewModel.setMarkerOptionsBottomSheet(false)
                         }) {
                             Text(text = "Eliminar marcador")
@@ -239,7 +240,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 @Composable
 fun myDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val placeType: String by myViewModel.placeType.observeAsState("Not especified")
+    val placeType: String by myViewModel.placeType.observeAsState("Not specified")
     val opcions = listOf("Not especified", "Cafe", "Restaurant", "Entertainment", "Shop", "Transport")
 
     Column (modifier = Modifier.padding(20.dp)) {

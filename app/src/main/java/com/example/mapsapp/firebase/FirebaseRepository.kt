@@ -68,14 +68,15 @@ class FirebaseRepository {
             .add(
                 hashMapOf(
                     "title" to marker.title,
-                    "ubicacion" to hashMapOf(
+                    "position" to hashMapOf(
                         "latitude" to marker.position.latitude,
                         "longitude" to marker.position.longitude
                     ),
                     "description" to marker.description,
                     "type" to marker.type,
                     "images" to marker.images,
-                    "userId" to marker.userId
+                    "userId" to marker.userId,
+                    "id" to marker.id
                 )
             )
     }
@@ -84,8 +85,18 @@ class FirebaseRepository {
         return database.collection("markers")
     }
 
-    fun deleteMarker(markerId: String) {
-        database.collection("markers").document(markerId).delete()
+    fun deleteMarker(marker: MarkerData){
+        val query = database.collection("markers").whereEqualTo("id", marker.id)
+        query.get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val markerRef = database.collection("markers").document(marker.id!!)
+                    markerRef.delete()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("Error", "Error getting documents: ", exception)
+            }
     }
 
 

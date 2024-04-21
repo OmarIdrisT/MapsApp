@@ -38,12 +38,12 @@ import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MarkerListSCreen(myViewModel: MyViewModel, navController: NavController) {
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.filteredMarkerList.observeAsState(mutableListOf(
+    val llistaMarkersFiltrada:MutableList<MarkerData> by myViewModel.filteredMarkerList.observeAsState(mutableListOf(
         MarkerData("", "","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())
     ))
     LazyColumn() {
-        items(llistaMarkers.size) {
-            CardItem(marker = llistaMarkers[it], navController, myViewModel)
+        items(llistaMarkersFiltrada.size) {
+            CardItem(marker = llistaMarkersFiltrada[it], navController, myViewModel)
         }
     }
 }
@@ -88,7 +88,9 @@ fun CardItem(marker: MarkerData, navController: NavController, myViewModel: MyVi
                             .fillMaxSize()
                             .weight(1f)
                     )
-                    Button(onClick =  {myViewModel.markerDeletion(marker)}) {
+                    Button(onClick =  {
+                        myViewModel.deleteMarker(marker)
+                        myViewModel.updateFilteredList()}) {
                         Text(text = "Eliminar marcador")
                     }
                 }

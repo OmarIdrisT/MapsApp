@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -120,10 +121,18 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val loggedUser by myViewModel.repository.loggedUser.observeAsState("")
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet (drawerContainerColor = Color.Black) {
-            Text(text = "userName" , modifier = Modifier.padding(16.dp), color = Color.White)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = null)
+                Text(text = loggedUser , modifier = Modifier.padding(16.dp), color = Color.White)
+            }
+
             HorizontalDivider()
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
@@ -160,9 +169,10 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                     scope.launch {
                         state.close()
                     }
-                    myViewModel.repository.auth.signOut()
-                    myViewModel.changeMapaInicial(true)
                     myViewModel.isLogged(false)
+                    myViewModel.logOut()
+                    myViewModel.changeMapaInicial(true)
+
                 }
             )
         }

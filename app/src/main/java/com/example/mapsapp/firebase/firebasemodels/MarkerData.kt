@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 
 class MarkerData {
     var userId: String = ""
-    var markerId: String? = ""
+    var id: String? = ""
     var title: String = ""
     var position: LatLng = LatLng(0.0,0.0)
     var description: String = ""
@@ -14,7 +14,7 @@ class MarkerData {
 
     constructor(userId: String, markerId: String?, title: String, position: LatLng, description: String, type: String, images: MutableList<String>) {
         this.userId = userId
-        this.markerId = markerId
+        this.id = markerId
         this.title = title
         this.position = position
         this.description = description

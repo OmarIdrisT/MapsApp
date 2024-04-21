@@ -51,7 +51,7 @@ class MyViewModel {
     var markerDescription = _markerDescription
 
     //Tipus de localització dels marcadors
-    var placeType = MutableLiveData("Not especified")
+    var placeType = MutableLiveData("Not specified")
         private set
 
 
@@ -153,7 +153,7 @@ class MyViewModel {
     }
 
     //Funció que elimina un marcador de la llista.
-    fun markerDeletion(oldMarker: MarkerData) {
+    fun markerDeletionFromList(oldMarker: MarkerData) {
         val markers = _markerList.value.orEmpty().toMutableList()
         markers.remove(oldMarker)
         _markerList.value = markers
@@ -183,6 +183,10 @@ class MyViewModel {
                 marker.type == filterOption.title
             }.toMutableList()
         }
+    }
+
+    fun updateFilteredList() {
+        _filteredMarkerList.value = _markerList.value
     }
 
     //Funció que permet assignar a la variable marker el valor del marcador que volem mostrar a detalls.
@@ -220,7 +224,7 @@ class MyViewModel {
     //Funció que afegeix fotos al marker des de la pantalla de detalls.
     fun addPhotoToMarker(marker: MarkerData, photo: String) {
         val markers = _markerList.value.orEmpty().toMutableList()
-        val updatedMarker = MarkerData(marker.userId, marker.markerId, marker.title, marker.position, marker.description, marker.description, marker.images.toMutableList().apply { add(photo) })
+        val updatedMarker = MarkerData(marker.userId, marker.id, marker.title, marker.position, marker.description, marker.description, marker.images.toMutableList().apply { add(photo) })
         chooseMarker(updatedMarker)
         markers.remove(marker)
         markers.add(updatedMarker)
@@ -344,7 +348,7 @@ class MyViewModel {
                     val document = dc.document
                     val title = document.getString("title") ?: ""
                     val description = document.getString("description") ?: ""
-                    val ubicacionMap = document.get("ubicacion") as? Map<String, Double>
+                    val ubicacionMap = document.get("position") as? Map<String, Double>
                     val position = LatLng(
                         ubicacionMap?.get("latitude") ?: 0.0,
                         ubicacionMap?.get("longitude") ?: 0.0
@@ -352,7 +356,7 @@ class MyViewModel {
                     val type = document.getString("type") ?: ""
                     val images =
                         document.get("images") as? MutableList<String> ?: mutableListOf<String>()
-                    val markerId = document.getString("markerId") ?: ""
+                    val markerId = document.getString("id") ?: ""
                     val userId = document.getString("userId") ?: ""
                     val newMark =
                         MarkerData(userId, markerId, title, position, description, type, images)
@@ -368,8 +372,9 @@ class MyViewModel {
             _markerList.value = filtredList
         }
     }
-    fun deleteMarker(markerId: String) {
-        repository.deleteMarker(markerId)
+    fun deleteMarker(marker: MarkerData) {
+        markerDeletionFromList(marker)
+        repository.deleteMarker(marker)
     }
 
 
@@ -380,6 +385,10 @@ class MyViewModel {
     }
     fun login(username: String?, password: String?) {
         repository.login(username, password)
+    }
+
+    fun logOut() {
+        repository.auth.signOut()
     }
 
 
