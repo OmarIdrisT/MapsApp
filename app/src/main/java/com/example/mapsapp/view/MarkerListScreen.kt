@@ -38,7 +38,7 @@ import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MarkerListSCreen(myViewModel: MyViewModel, navController: NavController) {
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.filteredMarkerList.observeAsState(mutableListOf(
         MarkerData("", "","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())
     ))
     LazyColumn() {

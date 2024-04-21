@@ -9,16 +9,24 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,6 +36,8 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,19 +48,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.mapsapp.firebase.firebasemodels.MarkerData
+import com.example.mapsapp.models.FilterOption
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.DetailScreen
@@ -62,6 +80,7 @@ import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -101,11 +120,10 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val userName by myViewModel.userName.observeAsState("")
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet (drawerContainerColor = Color.Black) {
-            Text(text = userName , modifier = Modifier.padding(16.dp), color = Color.White)
+            Text(text = "userName" , modifier = Modifier.padding(16.dp), color = Color.White)
             HorizontalDivider()
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
@@ -129,6 +147,7 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                         state.close()
                     }
                     if (currentRoute != Routes.MarkerListScreen.route) {
+                        myViewModel.filterList(filterOption = FilterOption.ALL)
                         navigationController.navigate(Routes.MarkerListScreen.route)
                     }
                 }
@@ -163,7 +182,7 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
     else {
         Scaffold(
             containerColor = Color.Black,
-            topBar = {MyTopAppBar(myViewModel, state)}
+            topBar = {MyTopAppBar(myViewModel, state, navController)}
         ) {paddingValues ->
             Box(
                 modifier = Modifier
@@ -187,8 +206,13 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
+fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState, navController: NavController) {
     val scope = rememberCoroutineScope()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val deployFilter by myViewModel.deployFilter.observeAsState(false)
+    var selectedFilter by remember { mutableStateOf(FilterOption.ALL) }
+
     TopAppBar(
         colors = TopAppBarColors(titleContentColor = Color.White, containerColor = Color.Black, navigationIconContentColor = Color.White, actionIconContentColor = Color.White, scrolledContainerColor = Color.Black),
         title = { Text(text = "My SuperApp") },
@@ -200,10 +224,58 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState) {
             }) {
                 Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
             }
+        },
+        actions = {
+            if (currentRoute == Routes.MarkerListScreen.route) {
+                IconButton(onClick = {
+                    if (deployFilter) myViewModel.changeDeployFilter(false)
+                    else myViewModel.changeDeployFilter(true)
+                }) {
+                    Icon(imageVector = Icons.Filled.FilterAlt, contentDescription = "Filter")
+                }
+                if (deployFilter) {
+                    FilterDropDownMenu(
+                        myViewModel = myViewModel,
+                        onOptionSelected = { option ->
+                            selectedFilter = option
+                            myViewModel.filterList(selectedFilter)
+                        },
+                        currentOption = selectedFilter)
+                }
+            }
         }
     )
 }
 
+@Composable
+fun FilterDropDownMenu(myViewModel: MyViewModel, onOptionSelected: (FilterOption) -> Unit, currentOption: FilterOption) {
+    var selectedOption by remember { mutableStateOf(currentOption) }
+
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = {myViewModel.changeDeployFilter(false) },
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Column {
+            FilterOption.values().forEach { option ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedOption == option,
+                        onClick = {
+                            selectedOption = option
+                            onOptionSelected(selectedOption)
+                        },
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    Text(
+                        text = option.title,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
 @Composable
 fun PermissionDeclinedScreen() {
     val context = LocalContext.current

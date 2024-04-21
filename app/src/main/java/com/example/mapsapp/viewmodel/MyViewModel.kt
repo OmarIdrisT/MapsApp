@@ -10,10 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
-import com.example.mapsapp.firebase.firebasemodels.User
-import com.example.mapsapp.firebase.FirebaseRepository
 import com.example.mapsapp.R
+import com.example.mapsapp.firebase.FirebaseRepository
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
+import com.example.mapsapp.firebase.firebasemodels.User
+import com.example.mapsapp.models.FilterOption
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.storage.FirebaseStorage
@@ -37,6 +38,10 @@ class MyViewModel {
     private val _markerList = MutableLiveData<MutableList<MarkerData>>()
     val markerList = _markerList
 
+    //Llista filtrada de marcadors
+    private val _filteredMarkerList = MutableLiveData<MutableList<MarkerData>>()
+    val filteredMarkerList = _filteredMarkerList
+
     //Títol dels marcadors
     private var _markerTitle = MutableLiveData<String>()
     var markerTitle = _markerTitle
@@ -46,7 +51,7 @@ class MyViewModel {
     var markerDescription = _markerDescription
 
     //Tipus de localització dels marcadors
-    var placeType = MutableLiveData("Sense especificar")
+    var placeType = MutableLiveData("Not especified")
         private set
 
 
@@ -71,6 +76,8 @@ class MyViewModel {
     //Variabla que controla si s'accedeix a la càmera desde el mapa o desde detalls.
     var comingFromMap: Boolean by mutableStateOf(false)
         private set
+
+    var deployFilter = MutableLiveData(false)
 
     //Llista on s'emmagatzemen les fotos fetes abans de crear el marcador.
     private var _newMarkerPhotos = MutableLiveData<MutableList<String>>(mutableListOf())
@@ -159,12 +166,22 @@ class MyViewModel {
 
     fun placeTypeIconChange(placeType: String): Int {
         return when (placeType) {
-            "Cafeteria" -> R.drawable.cafeteria
+            "Cafe" -> R.drawable.cafeteria
             "Restaurant" -> R.drawable.restaurants
-            "Entreteniment" -> R.drawable.entertainment
-            "Botiga" -> R.drawable.shopping
+            "Entertainment" -> R.drawable.entertainment
+            "Shop" -> R.drawable.shopping
             "Transport" -> R.drawable.transport
             else -> R.drawable.defaultplace
+        }
+    }
+
+    //Funció per filtrar
+    fun filterList(filterOption: FilterOption) {
+        filteredMarkerList.value = when (filterOption) {
+            FilterOption.ALL -> _markerList.value
+            else -> _markerList.value!!.filter { marker ->
+                marker.type == filterOption.title
+            }.toMutableList()
         }
     }
 
@@ -181,6 +198,10 @@ class MyViewModel {
     //Funció que modifica el valor de "comingFromMap" per indicar si la càmera s'ha obert o no des del mapa.
     fun changeComingFromMap(fromMap: Boolean) {
         comingFromMap = fromMap
+    }
+
+    fun changeDeployFilter(value: Boolean) {
+        deployFilter.value = value
     }
 
     //Càmera

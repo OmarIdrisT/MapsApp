@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -19,11 +21,13 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -39,10 +43,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mapsapp.R
+import com.example.mapsapp.firebase.firebasemodels.UserPrefs
 import com.example.mapsapp.viewmodel.MyViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +70,15 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
     val loginFail by myViewModel.repository.loginFail.observeAsState()
     val registerFail by myViewModel.repository.registerFail.observeAsState()
     val registerMode by myViewModel.registerMode.observeAsState(false)
+    val userPrefs = UserPrefs(context)
+    val storedUserData=userPrefs.getUserData.collectAsState(initial = emptyList())
+    var rememberUser by remember{ mutableStateOf(false)}
+    if (storedUserData.value.isNotEmpty() && storedUserData.value[0]!="" && storedUserData.value[1]!=""){
+        storedUserData.value.let {
+            userTextfield=it[0]
+            passTextfield=it[1]
+        }
+    }
 
     Image(
         painter = painterResource(id = R.drawable.fondo),
@@ -144,6 +162,12 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         )
                     )
                 }
+                else {
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center,verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked =rememberUser , onCheckedChange ={rememberUser=it} )
+                        Text("Remember me")
+                    }
+                }
                 if (loginFail == true) {
                     Text(text = "El usuari no existeix. Credencials incorrectes.", color = Color.Red, fontSize = 20.sp)
                 }
@@ -166,11 +190,15 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         myViewModel.updateLoginFail()
                         if (userTextfield != "" && passTextfield != "") {
                             myViewModel.login(userTextfield, passTextfield)
-                            if (loginFail == false) {
-                                showLoginToast = true
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if (rememberUser) {
+                                    userPrefs.saveUserData(userTextfield,passTextfield)
+                                }
                             }
-                        }
-                    }) {
+                        userTextfield = ""
+                        passTextfield = ""
+                        verifypassTextField = ""
+                        }}) {
                         Text(text = "Login", color = Color.White, fontSize = 20.sp)
                     }
                 } else {

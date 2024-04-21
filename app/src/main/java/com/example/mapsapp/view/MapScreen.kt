@@ -236,12 +236,11 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun myDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val placeType: String by myViewModel.placeType.observeAsState("Sense especificar")
-    val opcions = listOf("Sense especificar", "Cafeteria", "Restaurant", "Entreteniment", "Botiga", "Transport")
+    val placeType: String by myViewModel.placeType.observeAsState("Not especified")
+    val opcions = listOf("Not especified", "Cafe", "Restaurant", "Entertainment", "Shop", "Transport")
 
     Column (modifier = Modifier.padding(20.dp)) {
         OutlinedTextField(
