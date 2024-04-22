@@ -169,10 +169,8 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                     scope.launch {
                         state.close()
                     }
-                    myViewModel.isLogged(false)
                     myViewModel.logOut()
                     myViewModel.changeMapaInicial(true)
-
                 }
             )
         }

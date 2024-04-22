@@ -87,11 +87,37 @@ class FirebaseRepository {
 
     fun deleteMarker(marker: MarkerData){
         val query = database.collection("markers").whereEqualTo("id", marker.id)
+        Log.i("marker", marker.id.toString())
         query.get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
-                    val markerRef = database.collection("markers").document(marker.id!!)
+                    val markerRef = database.collection("markers").document(document.id)
                     markerRef.delete()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("Error", "Error getting documents: ", exception)
+            }
+    }
+
+    fun editMarker(marker: MarkerData){
+        database.collection("markers")
+            .whereEqualTo("id",marker.id)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("markers").document(document.id)
+                        .update(hashMapOf(
+                            "id" to marker.id,
+                            "title" to marker.title,
+                            "position" to hashMapOf(
+                                "latitude" to marker.position.latitude,
+                                "longitude" to marker.position.longitude
+                            ),
+                            "descripcion" to marker.description,
+                            "tipo" to marker.type,
+                            "imagenes" to marker.images
+                        ))
                 }
             }
             .addOnFailureListener { exception ->
@@ -116,6 +142,10 @@ class FirebaseRepository {
 
     fun updateRegisterFail() {
         _registerFail.value = false
+    }
+
+    fun updateGoToNext() {
+        _goToNext.value = false
     }
 
 

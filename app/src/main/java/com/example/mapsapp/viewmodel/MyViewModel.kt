@@ -113,7 +113,7 @@ class MyViewModel {
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn = _isLoggedIn
 
-    private val _registerMode = MutableLiveData<Boolean>()
+    private val _registerMode = MutableLiveData(false)
     val registerMode = _registerMode
 
 
@@ -377,6 +377,10 @@ class MyViewModel {
         repository.deleteMarker(marker)
     }
 
+    fun editMarker(marker:MarkerData) {
+        repository.editMarker(marker)
+    }
+
 
     //Authentication
 
@@ -387,8 +391,15 @@ class MyViewModel {
         repository.login(username, password)
     }
 
+    fun updateGoToNext() {
+        repository.updateGoToNext()
+    }
+
     fun logOut() {
+        updateGoToNext()
+        isLogged(false)
         repository.auth.signOut()
+
     }
 
 

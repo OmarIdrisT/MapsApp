@@ -194,10 +194,13 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                                 if (rememberUser) {
                                     userPrefs.saveUserData(userTextfield,passTextfield)
                                 }
+                                else {
+                                    userTextfield = ""
+                                    passTextfield = ""
+
+                                }
                             }
-                        userTextfield = ""
-                        passTextfield = ""
-                        verifypassTextField = ""
+                            verifypassTextField = ""
                         }}) {
                         Text(text = "Login", color = Color.White, fontSize = 20.sp)
                     }
