@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.firebase.firebasemodels.User
+import com.example.mapsapp.viewmodel.MyViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -25,6 +26,7 @@ class FirebaseRepository {
     val loginFail = _loginFail
     private val _registerFail = MutableLiveData<Boolean>()
     val registerFail = _registerFail
+
 
 
     fun addUser(user: User) {
@@ -158,7 +160,6 @@ class FirebaseRepository {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
                     _goToNext.value = true
-                    Log.i("hola", "")
                 }
             }
             .addOnFailureListener {

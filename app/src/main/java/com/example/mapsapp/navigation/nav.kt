@@ -6,4 +6,5 @@ sealed class Routes(val route: String) {
     object MarkerListScreen:Routes("MarkerListScreen")
     object DetailScreen:Routes("DetailScreen")
     object TakePhotoScreen:Routes("TakePhotoScreen")
+    object EditMarkerScreen:Routes("EditMarkerScreen")
 }

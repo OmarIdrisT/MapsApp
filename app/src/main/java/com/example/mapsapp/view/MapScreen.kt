@@ -101,7 +101,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     locationResult.addOnCompleteListener(context as MainActivity) { task ->
         if (task.isSuccessful) {
             lastKnownLocation = task.result
-            if (mapaInicial) {
+            if (mapaInicial || llistaMarkers.size == 0) {
                 deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
             }
             else {
@@ -177,7 +177,6 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                         }
 
                         Button(onClick = {
-                            Log.i("usuario", actualUser.toString())
                             val id= UUID.randomUUID().toString()
                             val newMarker = MarkerData(myViewModel.repository.userId.value!!,id, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
@@ -189,7 +188,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             myViewModel.changeDescription("")
                             myViewModel.placeTypeChange("Not specified")
                         }) {
-                            Text(text = "Crear marcador")
+                            Text(text = "Create marker")
                         }
                     }
 
@@ -220,13 +219,18 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             myViewModel.setMarkerOptionsBottomSheet(false)
                             navigationController.navigate(Routes.DetailScreen.route)
                         }) {
-                            Text(text = "Detalls marcador")
+                            Text(text = "Marker Details")
+                        }
+                        Button(onClick = {
+                            navigationController.navigate(Routes.EditMarkerScreen.route)
+                        }) {
+                            Text(text = "Edit marker")
                         }
                         Button(onClick = {
                             myViewModel.deleteMarker(actualMarker)
                             myViewModel.setMarkerOptionsBottomSheet(false)
                         }) {
-                            Text(text = "Eliminar marcador")
+                            Text(text = "Delete marker")
                         }
                     }
 

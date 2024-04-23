@@ -73,6 +73,7 @@ import com.example.mapsapp.models.FilterOption
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
 import com.example.mapsapp.view.DetailScreen
+import com.example.mapsapp.view.EditMarkerScreen
 import com.example.mapsapp.view.LoginScreen
 import com.example.mapsapp.view.MapScreen
 import com.example.mapsapp.view.MarkerListSCreen
@@ -206,6 +207,7 @@ fun MyScaffold(myViewModel: MyViewModel, state: DrawerState, navController: NavC
                     composable(Routes.MarkerListScreen.route) { MarkerListSCreen(myViewModel, navController) }
                     composable(Routes.TakePhotoScreen.route) {TakePhotoScreen(navController, myViewModel)}
                     composable(Routes.DetailScreen.route) { DetailScreen(navController, myViewModel) }
+                    composable(Routes.EditMarkerScreen.route) {EditMarkerScreen(navController, myViewModel)}
                 }
             }
         }

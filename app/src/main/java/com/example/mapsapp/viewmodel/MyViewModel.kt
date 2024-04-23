@@ -374,6 +374,7 @@ class MyViewModel {
     }
     fun deleteMarker(marker: MarkerData) {
         markerDeletionFromList(marker)
+        updateFilteredList()
         repository.deleteMarker(marker)
     }
 

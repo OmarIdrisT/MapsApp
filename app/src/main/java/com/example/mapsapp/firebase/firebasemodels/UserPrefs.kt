@@ -25,6 +25,13 @@ class UserPrefs (private val context: Context) {
         )
     }
 
+    suspend fun clearUserData() {
+        context.dataStore.edit { preferences ->
+            preferences[STORE_USERNAME] = ""
+            preferences[STORE_USERPASS] = ""
+        }
+    }
+
     suspend fun saveUserData(username: String, userpass: String) {
         context.dataStore.edit {prefs ->
             prefs[STORE_USERNAME] = username

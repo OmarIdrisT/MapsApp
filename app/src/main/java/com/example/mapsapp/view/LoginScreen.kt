@@ -64,7 +64,6 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
     val context = LocalContext.current
     val purple = Color(0xFF7B0BF3)
     var showRegisterToast by remember { mutableStateOf(false) }
-    var showLoginToast by remember { mutableStateOf(false) }
     val userId by myViewModel.repository.userId.observeAsState()
     val goNext by myViewModel.repository.goToNext.observeAsState(false)
     val loginFail by myViewModel.repository.loginFail.observeAsState()
@@ -72,7 +71,7 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
     val registerMode by myViewModel.registerMode.observeAsState(false)
     val userPrefs = UserPrefs(context)
     val storedUserData=userPrefs.getUserData.collectAsState(initial = emptyList())
-    var rememberUser by remember{ mutableStateOf(false)}
+    var rememberUser by remember { mutableStateOf(false)}
     if (storedUserData.value.isNotEmpty() && storedUserData.value[0]!="" && storedUserData.value[1]!=""){
         storedUserData.value.let {
             userTextfield=it[0]
@@ -95,7 +94,7 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
             modifier = Modifier
                 .fillMaxHeight(0.5f)
                 .fillMaxWidth(0.8f)
-                .background(Color.Black.copy(alpha = 0.3f))
+                .background(Color.White)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -110,10 +109,13 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     leadingIcon = {Icon(imageVector = Icons.Default.Email, contentDescription = null)},
                     colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedTextColor = purple,
+                        unfocusedBorderColor = purple,
                         containerColor = Color.White,
-                        focusedBorderColor = purple,
-                        focusedLeadingIconColor = purple,
-                        focusedLabelColor = purple
+                        focusedBorderColor = Color.Green,
+                        unfocusedLeadingIconColor = purple,
+                        focusedLeadingIconColor = Color.Green.copy(alpha = 0.4f),
+                        focusedLabelColor = Color.Green
                     )
                 )
                 OutlinedTextField(
@@ -132,8 +134,9 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                             Icon(imageVector  = image, description) } },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = purple,
                         containerColor = Color.White,
-                        focusedBorderColor = purple,
+                        focusedBorderColor = Color.Green,
                         focusedLeadingIconColor = purple,
                         focusedLabelColor = purple
                     )
@@ -157,7 +160,8 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
                             containerColor = Color.White,
                             focusedBorderColor = purple,
-                            focusedLeadingIconColor = purple,
+                            unfocusedLeadingIconColor = purple,
+                            focusedLeadingIconColor = Color.Green,
                             focusedLabelColor = purple
                         )
                     )
@@ -175,7 +179,7 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                     Text(text = "No és possible registrar aquest usuari.", color = Color.Red, fontSize = 20.sp)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    Text(text = if (registerMode) "Ja tens compte?" else "No tens compte?", color = Color.White)
+                    Text(text = if (registerMode) "Ja tens compte?" else "No tens compte?", color = Color.Black)
                     Text(text = if(!registerMode) " Registra't" else " Accedeix amb el teu compte", modifier = Modifier.clickable { myViewModel.changeMode() }, Color.Blue, textDecoration = TextDecoration.Underline)
                 }
                 if (goNext == true) {
@@ -195,6 +199,7 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                                     userPrefs.saveUserData(userTextfield,passTextfield)
                                 }
                                 else {
+                                    userPrefs.clearUserData()
                                     userTextfield = ""
                                     passTextfield = ""
 
@@ -209,9 +214,6 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         myViewModel.updateRegisterFail()
                         if (userTextfield != "" && passTextfield != "" && verifypassTextField == passTextfield) {
                             myViewModel.register(userTextfield, passTextfield)
-                            if(registerFail == false) {
-                                showRegisterToast = true
-                            }
                         }
                         userTextfield = ""
                         passTextfield = ""
@@ -221,10 +223,6 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                     if (showRegisterToast) {
                         Toast.makeText(context, "Your account has been created successfully", Toast.LENGTH_LONG).show()
                         showRegisterToast = false
-                    }
-                    if (showLoginToast) {
-                        Toast.makeText(context, "Login into your account", Toast.LENGTH_LONG).show()
-                        showLoginToast = false
                     }
                 }
             }
