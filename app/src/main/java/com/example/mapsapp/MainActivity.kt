@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -69,6 +70,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
+import com.example.mapsapp.firebase.firebasemodels.UserPrefs
 import com.example.mapsapp.models.FilterOption
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.ui.theme.MapsAppTheme
@@ -122,7 +124,9 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val loggedUser by myViewModel.repository.loggedUser.observeAsState("")
+    val loggedUser by myViewModel.loggedUser.observeAsState("")
+    val context = LocalContext.current
+    val userPrefs = UserPrefs(context)
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet (drawerContainerColor = Color.Black) {
@@ -169,9 +173,10 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                 onClick = {
                     scope.launch {
                         state.close()
+                        userPrefs.clearUserData()
+                        myViewModel.logOut()
+                        myViewModel.changeMapaInicial(true)
                     }
-                    myViewModel.logOut()
-                    myViewModel.changeMapaInicial(true)
                 }
             )
         }
@@ -251,6 +256,13 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState, navController: Nav
                             myViewModel.filterList(selectedFilter)
                         },
                         currentOption = selectedFilter)
+                }
+            }
+            if(currentRoute == Routes.DetailScreen.route) {
+                IconButton(onClick = {
+                    navController.navigate(Routes.EditMarkerScreen.route)
+                }) {
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
                 }
             }
         }

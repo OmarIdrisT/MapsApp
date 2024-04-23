@@ -9,11 +9,14 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.MutableLiveData
 import com.example.mapsapp.R
 import com.example.mapsapp.firebase.FirebaseRepository
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.firebase.firebasemodels.User
+import com.example.mapsapp.firebase.firebasemodels.UserPrefs
 import com.example.mapsapp.models.FilterOption
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
@@ -24,7 +27,7 @@ import java.util.Date
 import java.util.Locale
 
 class MyViewModel {
-
+    val brownista = FontFamily(Font(R.font.brownista))
     //Variable per cada marcador individual
     private var _marker =
         MutableLiveData(MarkerData("","","ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
@@ -79,6 +82,8 @@ class MyViewModel {
 
     var deployFilter = MutableLiveData(false)
 
+    var showRegisterToast = MutableLiveData(false)
+
     //Llista on s'emmagatzemen les fotos fetes abans de crear el marcador.
     private var _newMarkerPhotos = MutableLiveData<MutableList<String>>(mutableListOf())
     var newMarkerPhotos = _newMarkerPhotos
@@ -93,20 +98,9 @@ class MyViewModel {
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
 
-    //Llista usuaris
-    private val _userList = MutableLiveData<MutableList<User>>(mutableListOf())
-    val userList = _userList
-
     //Actual user
     private val _actualUser = MutableLiveData<User>()
     val actualUser = _actualUser
-
-    //Age && userName
-    private val _age = MutableLiveData<String>()
-    val age = _age
-    private val _userName = MutableLiveData<String>()
-    val userName = _userName
-
 
     //Authentication
 
@@ -265,29 +259,20 @@ class MyViewModel {
     //Firebase
 
     val repository = FirebaseRepository()
-
-    //Firebase getUsers()
-    fun getUsers() {
-        repository.getUsers().addSnapshotListener { value, error ->
-            if (error != null) {
-                Log.e("Firestore error", error.message.toString())
-                return@addSnapshotListener
-            }
-            val tempList = mutableListOf<User>()
-            for (dc: DocumentChange in value?.documentChanges!!) {
-                if (dc.type == DocumentChange.Type.ADDED) {
-                    val newUser = dc.document.toObject(User::class.java)
-                    newUser.userId = dc.document.id
-                    tempList.add(newUser)
-                }
-            }
-            _userList.value = tempList
-        }
-    }
+    private val _goToNext = MutableLiveData<Boolean>()
+    val goToNext = _goToNext
+    private val _userId = MutableLiveData<String>()
+    val userId = _userId
+    private val _loggedUser = MutableLiveData<String>()
+    val loggedUser = _loggedUser
+    private val _loginFail = MutableLiveData<Boolean>()
+    val loginFail = _loginFail
+    private val _registerFail = MutableLiveData<Boolean>()
+    val registerFail = _registerFail
 
     //Firebase getUser()
     fun getUser(userId: String) {
-        repository.getUser(userId).addSnapshotListener { value, error ->
+        repository.getUserFromDatabase(userId).addSnapshotListener { value, error ->
             if (error != null) {
                 Log.e("UserRepository", "Listen failted", error)
                 return@addSnapshotListener
@@ -298,8 +283,6 @@ class MyViewModel {
                     user.userId = userId
                 }
                 _actualUser.value = user
-                _userName.value = _actualUser.value!!.userName
-                _age.value = _actualUser.value!!.age.toString()
             } else {
                 Log.e("UserRepository", "Current data: null")
             }
@@ -332,7 +315,6 @@ class MyViewModel {
     }
 
     fun addMarkerToFirebase(marker: MarkerData) {
-        val repository = FirebaseRepository()
         repository.addMarker(marker)
     }
 
@@ -365,7 +347,7 @@ class MyViewModel {
             }
             val filtredList = mutableListOf<MarkerData>()
             for (marca in tempList) {
-                if (marca.userId == repository.userId.value) {
+                if (marca.userId == userId.value) {
                     filtredList.add(marca)
                 }
             }
@@ -378,23 +360,68 @@ class MyViewModel {
         repository.deleteMarker(marker)
     }
 
-    fun editMarker(marker:MarkerData) {
-        repository.editMarker(marker)
+    fun editMarker(newTitle: String, newDescription: String, newType: String) {
+        _actualMarker.value?.title = newTitle
+        _actualMarker.value?.description = newDescription
+        _actualMarker.value?.type = newType
+        repository.editMarker(_actualMarker.value!!)
     }
 
 
     //Authentication
 
-    fun register(username: String, password: String) {
-        repository.register(username, password)
+    fun register (username: String, password: String) {
+        repository.auth.createUserWithEmailAndPassword(username, password)
+            .addOnCompleteListener {task ->
+                if (task.isSuccessful) {
+                    _registerFail.value = false
+                    showRegisterToast.value = true
+                }
+                else {
+                    _registerFail.value = true
+                }
+            }
+            .addOnFailureListener {
+                _registerFail.value = true
+            }
+    }
+
+    fun restoreRegisterToast() {
+        showRegisterToast.value = false
     }
     fun login(username: String?, password: String?) {
-        repository.login(username, password)
+        repository.auth.signInWithEmailAndPassword(username!!, password!!)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _loginFail.value = false
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
+                    _goToNext.value = true
+                    _isLoggedIn.value = true
+                }
+                else {
+                    _goToNext.value = false
+                    _loginFail.value = true
+                }
+            }
+            .addOnFailureListener {
+                _goToNext.value = false
+                _loginFail.value = true
+            }
+    }
+
+    fun updateRegisterFail() {
+        _registerFail.value = false
+    }
+
+    fun updateLoginFail() {
+        _loginFail.value = false
     }
 
     fun updateGoToNext() {
-        repository.updateGoToNext()
+        _goToNext.value = false
     }
+
 
     fun logOut() {
         updateGoToNext()
@@ -417,13 +444,8 @@ class MyViewModel {
         }
     }
 
-    fun updateLoginFail() {
-        repository.updateLoginFail()
-    }
 
-    fun updateRegisterFail() {
-        repository.updateRegisterFail()
-    }
+
 
 
 

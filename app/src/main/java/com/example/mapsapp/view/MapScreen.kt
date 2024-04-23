@@ -164,7 +164,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             value = myDescription,
                             onValueChange = {myViewModel.changeDescription(it)}
                         )
-                        myDropDownMenu(myViewModel = myViewModel)
+                        creationDropDownMenu(myViewModel = myViewModel)
                         MyCameraFromMap(myViewModel = myViewModel, navigationController = navigationController)
                         if (newMarkerPhotos.size >= 1) {
                             LazyRow (modifier = Modifier.fillMaxHeight(0.3f)){
@@ -178,7 +178,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
                         Button(onClick = {
                             val id= UUID.randomUUID().toString()
-                            val newMarker = MarkerData(myViewModel.repository.userId.value!!,id, myTitle, markPosition, myDescription, placeType, mutableListOf())
+                            val newMarker = MarkerData(myViewModel.userId.value!!,id, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
                             myViewModel.addMarkerToFirebase(newMarker)
                             myViewModel.placeTypeIconChange(placeType)
@@ -242,7 +242,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 
 
 @Composable
-fun myDropDownMenu(myViewModel: MyViewModel) {
+fun creationDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
     val placeType: String by myViewModel.placeType.observeAsState("Not specified")
     val opcions = listOf("Not especified", "Cafe", "Restaurant", "Entertainment", "Shop", "Transport")
