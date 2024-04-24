@@ -26,11 +26,8 @@ import java.util.Date
 import java.util.Locale
 
 class MyViewModel {
+    //Variable per controlar la font de text de la App
     val brownista = FontFamily(Font(R.font.brownista))
-    //Variable per cada marcador individual
-    private var _marker =
-        MutableLiveData(MarkerData("","","ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
-    var marker = _marker
 
     //Variable per controlar la posició
     private var _markPosition = MutableLiveData(LatLng(41.4534265, 2.1837151))
@@ -52,6 +49,7 @@ class MyViewModel {
     private var _markerDescription = MutableLiveData<String>()
     var markerDescription = _markerDescription
 
+
     //Tipus de localització dels marcadors
     var placeType = MutableLiveData("Not specified")
         private set
@@ -62,11 +60,11 @@ class MyViewModel {
         MutableLiveData(MarkerData("", "","ITB", (LatLng(41.4534265, 2.1837151)), "", "", mutableListOf()))
     var actualMarker = _actualMarker
 
-    //Variable que controla el estat del ModalBottomSheet per crear nous marcadors.
+    //Variable que controla l' estat del ModalBottomSheet per crear nous marcadors.
     private var _showNewMarkerBottomSheet = MutableLiveData<Boolean>(false)
     val showNewMarkerBottomSheet = _showNewMarkerBottomSheet
 
-    //Variable que controla el estat del ModalBottomSheet per eliminar marcadors.
+    //Variable que controla l' estat del ModalBottomSheet per eliminar marcadors.
     private var _showMarkerOptionsBottomSheet = MutableLiveData<Boolean>(false)
     val showMarkerOptionsBottomSheet = _showMarkerOptionsBottomSheet
 
@@ -75,19 +73,21 @@ class MyViewModel {
     var mapaInicial: Boolean by mutableStateOf(true)
         private set
 
-    //Variabla que controla si s'accedeix a la càmera desde el mapa o desde detalls.
+    //Variable que controla si s'accedeix a la càmera desde el mapa o desde detalls.
     var comingFromMap: Boolean by mutableStateOf(false)
         private set
 
+    //Variable que controla si s'ha de desplegar el filtre o no.
     var deployFilter = MutableLiveData(false)
 
+    //Variable que controla si s'ha de mostrar el toast de registre.
     var showRegisterToast = MutableLiveData(false)
 
     //Llista on s'emmagatzemen les fotos fetes abans de crear el marcador.
     private var _newMarkerPhotos = MutableLiveData<MutableList<String>>(mutableListOf())
     var newMarkerPhotos = _newMarkerPhotos
 
-    //Càmera
+    //Variables pels permissos de la càmera
     private val _cameraPermissionGranted = MutableLiveData(false)
     val cameraPermissionGranted = _cameraPermissionGranted
 
@@ -99,16 +99,18 @@ class MyViewModel {
 
     //Actual user
     private val _actualUser = MutableLiveData<User>()
-    val actualUser = _actualUser
 
     //Authentication
 
+    //Variable que controla si l'usuari està loggejat o no.
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn = _isLoggedIn
 
+    //Variable que controla si s'ha de mostrar la UI de login o la de registre
     private val _registerMode = MutableLiveData(false)
     val registerMode = _registerMode
 
+    //Variable que controla si s'accedeix per primera vegada a la pantalla de login.
     var firstAccess by mutableStateOf(true)
 
 
@@ -139,14 +141,6 @@ class MyViewModel {
         _showMarkerOptionsBottomSheet.value = state
     }
 
-    //Funció que afegeix un nou marcador a la llista de marcadors.
-    fun markerAddition(newMarker: MarkerData) {
-        Log.i("objeto", newMarker.toString())
-        val markers = _markerList.value.orEmpty().toMutableList()
-        markers.add(newMarker)
-        _markerList.value = markers
-    }
-
     //Funció que elimina un marcador de la llista.
     fun markerDeletionFromList(oldMarker: MarkerData) {
         val markers = _markerList.value.orEmpty().toMutableList()
@@ -159,6 +153,7 @@ class MyViewModel {
         placeType.value = valor
     }
 
+    //Funció que assigna l'icona corresponent al tipus de localització.
     fun placeTypeIconChange(placeType: String): Int {
         return when (placeType) {
             "Cafe" -> R.drawable.cafeteria
@@ -195,11 +190,12 @@ class MyViewModel {
         comingFromMap = fromMap
     }
 
+    //Funció que modifica el valor de "deployFilter" per indicar si s'ha de desplegar el filtre o no.
     fun changeDeployFilter(value: Boolean) {
         deployFilter.value = value
     }
 
-    //Càmera
+    //Funcions relacionades amb els permissos de la càmera
     fun setCameraPermissionGranted(granted: Boolean) {
         _cameraPermissionGranted.value = granted
     }
@@ -222,7 +218,7 @@ class MyViewModel {
         _markerList.value = markers
     }
 
-    //Funció que afegeix fotos al marker des del mapa.
+    //Funció que afegeix fotos a una llista temporal.
     fun addPhotosToNewMarker(photo: String) {
         _newMarkerPhotos.value!!.add(photo)
     }
@@ -255,19 +251,27 @@ class MyViewModel {
 
     //Firebase
 
+    //Instancia del repositori de Firebase
     val repository = FirebaseRepository()
+
+    //Variables per controlar la navegació
     private val _goToNext = MutableLiveData<Boolean>()
     val goToNext = _goToNext
+
+    //Variable per controlar el userId
     private val _userId = MutableLiveData<String>()
     val userId = _userId
+    //Variable per controlar l'usuari loggejat
     private val _loggedUser = MutableLiveData<String>()
     val loggedUser = _loggedUser
+    //Variable per controlar si el login ha fallat
     private val _loginFail = MutableLiveData<Boolean>()
     val loginFail = _loginFail
+    //Variable per controlar si el registre ha fallat
     private val _registerFail = MutableLiveData<Boolean>()
     val registerFail = _registerFail
 
-    //Firebase getUser()
+    //Funció que permet obtenir l'usuari actual
     fun getUser(userId: String) {
         repository.getUserFromDatabase(userId).addSnapshotListener { value, error ->
             if (error != null) {
@@ -286,7 +290,7 @@ class MyViewModel {
         }
     }
 
-    //Pujar imatge
+    //Funció que permet pujar una imatge a Firebase Storage
     fun uploadImage(imageUri: Uri) {
         val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
         val now = Date()
@@ -299,6 +303,7 @@ class MyViewModel {
                     Log.i("IMAGEN", it.toString())
                     if (!comingFromMap) {
                         addPhotoToMarker(actualMarker.value!!, it.toString())
+                        repository.editMarker(actualMarker.value!!)
                     }
                     else {
                         addPhotosToNewMarker(it.toString())
@@ -311,10 +316,12 @@ class MyViewModel {
             }
     }
 
+    //Funció que permet afegir un marcador a Firebase
     fun addMarkerToFirebase(marker: MarkerData) {
         repository.addMarker(marker)
     }
 
+    //Funció que permet obtenir els marcadors de Firebase per un usuari concret
     fun getMarkers() {
         repository.getMarkers().addSnapshotListener { value, error ->
             if (error != null) {
@@ -352,23 +359,24 @@ class MyViewModel {
         }
     }
 
-    var selectedFilter = MutableLiveData<FilterOption>(FilterOption.ALL)
+    //Variable per controlar el filtre seleccionat
+    var selectedFilter = MutableLiveData(FilterOption.ALL)
 
+
+    //Funció que permet actualitzar el filtre seleccionat
     fun updateFilter(filter: FilterOption) {
         selectedFilter.value = filter
         filterList(selectedFilter.value!!)
     }
+
+    //Funció que permet esborrar un marcador de la App
     fun deleteMarker(marker: MarkerData) {
         markerDeletionFromList(marker)
         repository.deleteMarkerFromDatabase(marker)
         filterList(selectedFilter.value!!)
     }
 
-    fun updateFilteredList(completeList: MutableList<MarkerData>) {
-        _filteredMarkerList.value = completeList
-    }
-
-
+    //Funció que permet esborrar una imatge de la App
     fun editMarker(newTitle: String, newDescription: String, newType: String) {
         _actualMarker.value?.title = newTitle
         _actualMarker.value?.description = newDescription
@@ -379,6 +387,7 @@ class MyViewModel {
 
     //Authentication
 
+    //Funció que permet registrar un usuari
     fun register (username: String, password: String) {
         repository.auth.createUserWithEmailAndPassword(username, password)
             .addOnCompleteListener {task ->
@@ -395,9 +404,12 @@ class MyViewModel {
             }
     }
 
+    //Funció que permet tancar el toast de registre
     fun restoreRegisterToast() {
         showRegisterToast.value = false
     }
+
+    //Funció que permet loggejar un usuari
     fun login(username: String?, password: String?) {
         repository.auth.signInWithEmailAndPassword(username!!, password!!)
             .addOnCompleteListener { task ->
@@ -419,19 +431,23 @@ class MyViewModel {
             }
     }
 
+    //Funció que permet actualitzar el missatge de registre fallit
     fun updateRegisterFail() {
         _registerFail.value = false
     }
 
+    //Funció que permet actualitzar el missatge de login fallit
     fun updateLoginFail() {
         _loginFail.value = false
     }
 
+    //Funció que actualitza el valor de _goToNext per fer el logout
     fun updateGoToNext() {
         _goToNext.value = false
     }
 
 
+    //Funció que permet tancar la sessió
     fun logOut() {
         updateGoToNext()
         isLogged(false)
@@ -440,10 +456,12 @@ class MyViewModel {
     }
 
 
+    //Funció que permet actualitzar el valor de _isLoggedIn comprovant si l'usuari està loggejat o no
     fun isLogged(value: Boolean) {
         _isLoggedIn.value = value
     }
 
+    //Funció que permet canviar el mode de registre a login i viceversa
     fun changeMode() {
         if (_registerMode.value == false) {
             _registerMode.value = true
@@ -453,6 +471,7 @@ class MyViewModel {
         }
     }
 
+    //Funció que permet actualitzar el valor de firstAccess
     fun updateAccess() {
         firstAccess = false
     }

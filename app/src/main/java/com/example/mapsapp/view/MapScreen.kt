@@ -9,7 +9,9 @@ import android.location.Location
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,11 +22,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -41,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +60,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mapsapp.MainActivity
 import com.example.mapsapp.PermissionDeclinedScreen
+import com.example.mapsapp.R
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -147,18 +158,70 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                     containerColor = Color.Black,
                     contentColor = Color.White) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Text(text = "Nom del marcador:")
-                        TextField(
-                            modifier = Modifier.background(Color.White),
+                        OutlinedTextField(
                             value = myTitle,
-                            onValueChange = { myViewModel.changeTitle(it) }
+                            onValueChange = { myViewModel.changeTitle(it) },
+                            label = {
+                                androidx.compose.material.Text(
+                                    text = "Title",
+                                    color = Color.White,
+                                    fontFamily = myViewModel.brownista,
+                                    fontSize = 20.sp
+                                )
+                            },
+                            placeholder = {
+                                androidx.compose.material.Text(
+                                    text = "MyMarker",
+                                    color = Color.LightGray,
+                                    fontFamily = myViewModel.brownista,
+                                    fontSize = 20.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontFamily = myViewModel.brownista, fontSize = 20.sp),
+                            leadingIcon = { Icon(imageVector = Icons.Default.Title, contentDescription = null) },
+                            colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                                unfocusedTextColor = Color.White,
+                                focusedTextColor = Color.White,
+                                unfocusedBorderColor = Color.White,
+                                containerColor = Color.Black,
+                                focusedBorderColor = Color.Green,
+                                unfocusedLeadingIconColor = Color.White,
+                                focusedLeadingIconColor = Color.Green,
+                                focusedLabelColor = Color.Green
+                            )
                         )
                         Spacer(Modifier.height(15.dp))
-                        Text(text = "Descripció")
-                        TextField(
-                            modifier = Modifier.background(Color.White),
+                        OutlinedTextField(
                             value = myDescription,
-                            onValueChange = {myViewModel.changeDescription(it)}
+                            onValueChange = { myViewModel.changeDescription(it) },
+                            label = {
+                                androidx.compose.material.Text(
+                                    text = "Description",
+                                    color = Color.White,
+                                    fontFamily = myViewModel.brownista,
+                                    fontSize = 20.sp
+                                )
+                            },
+                            placeholder = {
+                                androidx.compose.material.Text(
+                                    text = "MyDescription",
+                                    color = Color.LightGray,
+                                    fontFamily = myViewModel.brownista,
+                                    fontSize = 20.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontFamily = myViewModel.brownista, fontSize = 20.sp),
+                            leadingIcon = { Icon(imageVector = Icons.Default.Description, contentDescription = null) },
+                            colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                                unfocusedTextColor = Color.White,
+                                focusedTextColor = Color.White,
+                                unfocusedBorderColor = Color.White,
+                                containerColor = Color.Black,
+                                focusedBorderColor = Color.Green,
+                                unfocusedLeadingIconColor = Color.White,
+                                focusedLeadingIconColor = Color.Green,
+                                focusedLabelColor = Color.Green
+                            )
                         )
                         creationDropDownMenu(myViewModel = myViewModel)
                         MyCameraFromMap(myViewModel = myViewModel, navigationController = navigationController)
@@ -171,8 +234,8 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                                 }
                             }
                         }
-
-                        Button(onClick = {
+                        Spacer(Modifier.height(15.dp))
+                        OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
                             val id= UUID.randomUUID().toString()
                             val newMarker = MarkerData(myViewModel.userId.value!!,id, myTitle, markPosition, myDescription, placeType, mutableListOf())
                             newMarker.images.addAll(newMarkerPhotos)
@@ -184,7 +247,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
                             myViewModel.changeDescription("")
                             myViewModel.placeTypeChange("Not specified")
                         }) {
-                            Text(text = "Create marker")
+                            Text(text = "Create marker", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
                         }
                     }
 
@@ -211,22 +274,24 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
             if (showMarkerOptionsBottomSheet) {
                 ModalBottomSheet(onDismissRequest = {myViewModel.setMarkerOptionsBottomSheet(false)}, sheetState = sheetState, containerColor = Color.Black, contentColor = Color.White) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Button(onClick = {
+                        OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
                             myViewModel.setMarkerOptionsBottomSheet(false)
                             navigationController.navigate(Routes.DetailScreen.route)
                         }) {
-                            Text(text = "Marker Details")
+                            Text(text = "Marker Details", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
                         }
-                        Button(onClick = {
+                        Spacer(Modifier.height(15.dp))
+                        OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
                             navigationController.navigate(Routes.EditMarkerScreen.route)
                         }) {
-                            Text(text = "Edit marker")
+                            Text(text = "Edit marker", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
                         }
-                        Button(onClick = {
+                        Spacer(Modifier.height(15.dp))
+                        OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
                             myViewModel.deleteMarker(actualMarker)
                             myViewModel.setMarkerOptionsBottomSheet(false)
                         }) {
-                            Text(text = "Delete marker")
+                            Text(text = "Delete marker", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
                         }
                     }
 
@@ -241,7 +306,7 @@ fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
 fun creationDropDownMenu(myViewModel: MyViewModel) {
     var expanded by remember { mutableStateOf(false) }
     val placeType: String by myViewModel.placeType.observeAsState("Not specified")
-    val opcions = listOf("Not especified", "Cafe", "Restaurant", "Entertainment", "Shop", "Transport")
+    val opcions = listOf("Not specified", "Cafe", "Restaurant", "Entertainment", "Shop", "Transport")
 
     Column (modifier = Modifier.padding(20.dp)) {
         OutlinedTextField(
@@ -249,12 +314,13 @@ fun creationDropDownMenu(myViewModel: MyViewModel) {
             onValueChange = { myViewModel.placeTypeChange(it) },
             enabled = false,
             readOnly = true,
-            textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+            textStyle = TextStyle(color = Color.White, fontSize = 25.sp, textAlign = TextAlign.Center, fontFamily = myViewModel.brownista),
             modifier = Modifier
                 .clickable { expanded = true }
                 .fillMaxWidth(0.6f)
+                .border(BorderStroke(1.dp, Color.White))
                 .height(60.dp)
-                .background(color = Color.White)
+                .background(color = Color.Black)
                 .align(alignment = Alignment.CenterHorizontally)
         )
 
@@ -263,7 +329,7 @@ fun creationDropDownMenu(myViewModel: MyViewModel) {
             onDismissRequest = { expanded = false },
         ) {
             opcions.forEach { type ->
-                DropdownMenuItem(modifier = Modifier.background(color = Color.Black) ,text = { Text(text = type, style = TextStyle(color = Color.White)) }, onClick = {
+                DropdownMenuItem(modifier = Modifier.background(color = Color.Black) ,text = { Text(text = type, style = TextStyle(color = Color.White, fontFamily = myViewModel.brownista)) }, onClick = {
                     expanded = false
                     myViewModel.placeTypeChange(type)
                 })
@@ -294,14 +360,13 @@ fun MyCameraFromMap(navigationController: NavController, myViewModel: MyViewMode
                     )
                 )
                 if (!shouldShowPermissionRationale) {
-                    Log.i("CameraScreen", "No podemos volver a pedir permisos")
                     myViewModel.setShowPermissionDenied(true)
                 }
             }
         }
     )
 
-    Button(onClick = {
+    OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
         if (!isCameraPermissionGranted) {
             launcher.launch(Manifest.permission.CAMERA)
         } else {
@@ -309,7 +374,7 @@ fun MyCameraFromMap(navigationController: NavController, myViewModel: MyViewMode
             navigationController.navigate(Routes.TakePhotoScreen.route)
         }
     }) {
-        Text(text = "Take photo")
+        Text(text = "Take photo", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
     }
     if(showPermissionDenied) {
         PermissionDeclinedScreen()

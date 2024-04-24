@@ -18,6 +18,7 @@ class FirebaseRepository {
 
 
 
+    //Funció que retorna l'usuari actual
     fun getUserFromDatabase(userId: String): DocumentReference {
         return database.collection("users").document(userId)
     }
@@ -25,6 +26,7 @@ class FirebaseRepository {
 
     //Markers
 
+    //Funció que afegeix un marcador a la base de dades
     fun addMarker(marker: MarkerData) {
         database.collection("markers")
             .add(
@@ -43,10 +45,13 @@ class FirebaseRepository {
             )
     }
 
+    //Funció que retorna tots els marcadors de la base de dades
     fun getMarkers(): CollectionReference {
         return database.collection("markers")
     }
 
+
+    //Funció que esborra un marcador de la base de dades
     fun deleteMarkerFromDatabase(marker: MarkerData) {
         val query = database.collection("markers").whereEqualTo("id", marker.id)
         Log.i("marker", marker.id.toString())
@@ -65,6 +70,7 @@ class FirebaseRepository {
             }
     }
 
+    //Funció que esborra una imatge de la base de dades
     fun deleteImage(image: String, marker: MarkerData) {
         val storage = FirebaseStorage.getInstance().getReferenceFromUrl(image)
         storage.delete()
@@ -75,6 +81,7 @@ class FirebaseRepository {
             .addOnFailureListener { Log.e("Image delete", "Image delete failed") }
     }
 
+    //Funció que actualitza un marcador de la base de dades
     fun editMarker(marker: MarkerData){
         database.collection("markers")
             .whereEqualTo("id",marker.id)

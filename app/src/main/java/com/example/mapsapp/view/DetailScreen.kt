@@ -7,6 +7,8 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +39,7 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.mapsapp.PermissionDeclinedScreen
+import com.example.mapsapp.R
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
@@ -45,7 +49,13 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) {
     val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
-    Log.i("objeto detall", myMarker.images.toString())
+    Image(
+        painter = painterResource(id = R.drawable.fondo),
+        contentDescription = "",
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.FillBounds
+    )
+
     LazyColumn (
         modifier = Modifier
             .padding(8.dp)
@@ -64,25 +74,22 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
             Text(
                 text = myMarker.title,
                 color = Color.White,
+                fontFamily = myViewModel.brownista,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
         }
         item {
-            Text(text = myMarker.type,
-                color = Color.White,
-                fontSize = 15.sp,
-            )
-        }
-        item {
             Text(
                 text = myMarker.description,
-                color = Color.White
+                color = Color.White,
+                fontFamily = myViewModel.brownista,
+                fontSize = 20.sp
             )
         }
 
         item {
-            LazyRow {
+            LazyRow (verticalAlignment = Alignment.CenterVertically) {
                 items(myMarker.images.size + 1) { index ->
                     if (index < myMarker.images.size) {
                         ImageItem(myMarker.images[index], myViewModel)
@@ -103,13 +110,14 @@ fun ImageItem(markerPhoto: String, myViewModel: MyViewModel) {
     val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     Box(modifier = Modifier
         .padding(8.dp)
-        .fillMaxSize(0.9f),
+        .fillMaxSize(0.9f)
+        .background(Color.Black.copy(alpha = 0.3f)),
         contentAlignment = Alignment.Center){
         Card (
             border = BorderStroke(2.dp, Color.LightGray),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.padding(8.dp),
-            colors = CardDefaults.cardColors(Color.DarkGray.copy(alpha = 0.6f)),
+            colors = CardDefaults.cardColors(Color.Black.copy(alpha = 0.6f)),
             onClick = {myViewModel.repository.deleteImage(markerPhoto, myMarker)}
         ) {
             GlideImage(
@@ -162,7 +170,7 @@ fun MyCameraFromDetails(navigationController: NavController, myViewModel: MyView
             },
         contentAlignment = Alignment.Center
         ) {
-         Text(text = "+", color = Color.White)
+         Text(text = "+", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp)
         }
     if(showPermissionDenied) {
         PermissionDeclinedScreen()

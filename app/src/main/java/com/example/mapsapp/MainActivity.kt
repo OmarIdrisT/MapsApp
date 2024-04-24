@@ -9,6 +9,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -59,11 +61,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -135,14 +139,15 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
-                Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = null)
-                Text(text = loggedUser , modifier = Modifier.padding(16.dp), color = Color.White)
+                Image(painter = painterResource(id = R.drawable.profileicon), contentDescription = null, modifier = Modifier.padding(16.dp))
+                Text(text = loggedUser , modifier = Modifier.padding(16.dp), color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp)
             }
 
-            HorizontalDivider()
+            HorizontalDivider(modifier = Modifier.height(16.dp), color = Color.White, thickness = 2.dp)
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
-                label = { Text(text = "Map", color = Color.White)},
+                icon = { Image(painter = painterResource(id = R.drawable.mapicon), contentDescription = null) },
+                label = { Text(text = "Map", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp)},
                 selected = false,
                 onClick = {
                     scope.launch {
@@ -153,9 +158,11 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                     }
                 }
             )
+            Spacer(modifier = Modifier.height(16.dp))
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
-                label = { Text(text = "Marker List", color = Color.White)},
+                icon = { Image(painter = painterResource(id = R.drawable.listicon), contentDescription = null) },
+                label = { Text(text = "Marker List", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp)},
                 selected = false,
                 onClick = {
                     scope.launch {
@@ -170,7 +177,8 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
-                label = { Text(text = "LogOut", color = Color.White)},
+                icon = { Image(painter = painterResource(id = R.drawable.logouticon), contentDescription = null) },
+                label = { Text(text = "LogOut", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp)},
                 selected = false,
                 onClick = {
                     scope.launch {
@@ -229,10 +237,10 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState, navController: Nav
     val currentRoute = navBackStackEntry?.destination?.route
     val deployFilter by myViewModel.deployFilter.observeAsState(false)
     var selectedFilter by remember { mutableStateOf(myViewModel.selectedFilter) }
-
+    myViewModel.updateFilter(FilterOption.ALL)
     TopAppBar(
         colors = TopAppBarColors(titleContentColor = Color.White, containerColor = Color.Black, navigationIconContentColor = Color.White, actionIconContentColor = Color.White, scrolledContainerColor = Color.Black),
-        title = { Text(text = "My SuperApp") },
+        title = { Text(text = "My SuperApp", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 30.sp) },
         navigationIcon = {
             IconButton(onClick = {
                 scope.launch {
@@ -277,7 +285,7 @@ fun FilterDropDownMenu(myViewModel: MyViewModel, onOptionSelected: (FilterOption
     DropdownMenu(
         expanded = true,
         onDismissRequest = {myViewModel.changeDeployFilter(false) },
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp),
     ) {
         Column {
             FilterOption.values().forEach { option ->
@@ -288,10 +296,13 @@ fun FilterDropDownMenu(myViewModel: MyViewModel, onOptionSelected: (FilterOption
                             selectedOption = option
                             onOptionSelected(selectedOption)
                         },
+                        colors = RadioButtonDefaults.colors(selectedColor = Color.White),
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                     Text(
                         text = option.title,
+                        color = Color.White,
+                        fontFamily = myViewModel.brownista,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }

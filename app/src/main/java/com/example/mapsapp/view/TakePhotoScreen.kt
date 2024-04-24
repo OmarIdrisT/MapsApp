@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,28 +68,25 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
         onResult = {
             if (Build.VERSION.SDK_INT<28){
                 bitmap= MediaStore.Images.Media.getBitmap(context.contentResolver,it)
-                if (it != null && !comingFromMap) {
-                    myViewModel.uploadImage(it)
-                }
-                else {
-                    myViewModel.addPhotosToNewMarker(it.toString())
-                    if (it != null) {
+                if (it != null) {
+                    if (!comingFromMap) {
+                        myViewModel.uploadImage(it)
+                    }
+                    else {
                         myViewModel.uploadImage(it)
                     }
                 }
             }else{
                 val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
                 source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
-                if (it != null && !comingFromMap) {
-                    myViewModel.uploadImage(it)
-                }
-                else {
-                    myViewModel.addPhotosToNewMarker(it.toString())
-                    if (it != null) {
+                if (it != null) {
+                    if (!comingFromMap) {
+                        myViewModel.uploadImage(it)
+                    }
+                    else {
                         myViewModel.uploadImage(it)
                     }
                 }
-                Log.e("IMAGEN","si va")
             }
         }
     )
