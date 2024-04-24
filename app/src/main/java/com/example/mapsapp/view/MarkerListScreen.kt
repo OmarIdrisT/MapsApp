@@ -42,7 +42,6 @@ import com.example.mapsapp.R
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.navigation.Routes
 import com.example.mapsapp.viewmodel.MyViewModel
-import com.google.android.gms.maps.model.LatLng
 
 
 @Composable
