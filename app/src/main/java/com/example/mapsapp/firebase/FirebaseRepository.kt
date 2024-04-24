@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 
 class FirebaseRepository {
@@ -46,11 +47,14 @@ class FirebaseRepository {
         return database.collection("markers")
     }
 
-    fun deleteMarker(marker: MarkerData){
+    fun deleteMarkerFromDatabase(marker: MarkerData) {
         val query = database.collection("markers").whereEqualTo("id", marker.id)
         Log.i("marker", marker.id.toString())
         query.get()
             .addOnSuccessListener { documents ->
+                for (image in marker.images) {
+                    deleteImage(image, marker)
+                }
                 for (document in documents) {
                     val markerRef = database.collection("markers").document(document.id)
                     markerRef.delete()
@@ -59,6 +63,16 @@ class FirebaseRepository {
             .addOnFailureListener { exception ->
                 Log.w("Error", "Error getting documents: ", exception)
             }
+    }
+
+    fun deleteImage(image: String, marker: MarkerData) {
+        val storage = FirebaseStorage.getInstance().getReferenceFromUrl(image)
+        storage.delete()
+            .addOnSuccessListener {
+                marker.images.remove(image)
+                editMarker(marker)
+            }
+            .addOnFailureListener { Log.e("Image delete", "Image delete failed") }
     }
 
     fun editMarker(marker: MarkerData){
@@ -75,9 +89,9 @@ class FirebaseRepository {
                                 "latitude" to marker.position.latitude,
                                 "longitude" to marker.position.longitude
                             ),
-                            "descripcion" to marker.description,
-                            "tipo" to marker.type,
-                            "imagenes" to marker.images
+                            "description" to marker.description,
+                            "type" to marker.type,
+                            "images" to marker.images
                         ))
                 }
             }
@@ -85,15 +99,6 @@ class FirebaseRepository {
                 Log.w("Error", "Error getting documents: ", exception)
             }
     }
-
-
-    //Authentication
-
-
-
-
-
-
 
 
 }

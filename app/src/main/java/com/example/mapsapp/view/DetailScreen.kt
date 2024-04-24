@@ -100,6 +100,7 @@ fun DetailScreen(navigationController: NavController, myViewModel: MyViewModel) 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ImageItem(markerPhoto: String, myViewModel: MyViewModel) {
+    val myMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151)),"", "", mutableListOf()))
     Box(modifier = Modifier
         .padding(8.dp)
         .fillMaxSize(0.9f),
@@ -109,7 +110,7 @@ fun ImageItem(markerPhoto: String, myViewModel: MyViewModel) {
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.padding(8.dp),
             colors = CardDefaults.cardColors(Color.DarkGray.copy(alpha = 0.6f)),
-            onClick = {}
+            onClick = {myViewModel.repository.deleteImage(markerPhoto, myMarker)}
         ) {
             GlideImage(
                 model = markerPhoto,

@@ -1,6 +1,5 @@
 package com.example.mapsapp.view
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -10,12 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -23,9 +20,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -79,14 +74,18 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
     val userPrefs = UserPrefs(context)
     val storedUserData=userPrefs.getUserData.collectAsState(initial = emptyList())
     var rememberUser by remember { mutableStateOf(false)}
-    if (storedUserData.value.isNotEmpty() && storedUserData.value[0]!="" && storedUserData.value[1]!=""){
+    var firstAccess by remember { mutableStateOf(myViewModel.firstAccess) }
+    if (storedUserData.value.isNotEmpty() && storedUserData.value[0]!="" && storedUserData.value[1]!="") {
         storedUserData.value.let {
-            if(rememberUser) {
-                myViewModel.login(it[0],it[1])
+            if (firstAccess) {
+                userTextfield = it[0]
+                passTextfield = it[1]
+                myViewModel.login(userTextfield, passTextfield)
             }
-
+            myViewModel.updateAccess()
         }
     }
+
 
     Image(
         painter = painterResource(id = R.drawable.fondo),
@@ -200,8 +199,11 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                         Text(text = "Remember me", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
                     }
                 }
-                if (loginFail == true) {
+                if (loginFail == true && !registerMode) {
                     Text(text = "This user does not exist.", color = Color.Red.copy(alpha = 0.8f), fontFamily = myViewModel.brownista, fontSize = 20.sp)
+                }
+                if (registerFail == true && registerMode) {
+                    Text(text = "This user could not be created.", color = Color.Red.copy(alpha = 0.8f), fontFamily = myViewModel.brownista, fontSize = 20.sp)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Text(text = if (registerMode) "Do you have an account?" else "Don't have an account?", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
@@ -246,16 +248,13 @@ fun LoginScreen(navController: NavController, myViewModel: MyViewModel) {
                 } else {
                     OutlinedButton(modifier = Modifier.background(Color.Transparent), border = BorderStroke(1.dp, Color.White), onClick = {
                         myViewModel.updateRegisterFail()
-                        if (userTextfield != "" && passTextfield != "" && verifypassTextField == passTextfield) {
+                        if (userTextfield != "" && passTextfield != "" && verifypassTextField != "") {
                             myViewModel.register(userTextfield, passTextfield)
                         }
                         userTextfield = ""
                         passTextfield = ""
                         verifypassTextField = ""}) {
                         Text(text = "Sign up", color = Color.White, fontFamily = myViewModel.brownista, fontSize = 20.sp)
-                    }
-                    if (registerFail == true) {
-                        Text(text = "This user cannot be created.", color = Color.Red.copy(alpha = 0.8f), fontFamily = myViewModel.brownista, fontSize = 20.sp)
                     }
                     if (showRegisterToast) {
                         Toast.makeText(context, "Your account has been created successfully", Toast.LENGTH_LONG).show()

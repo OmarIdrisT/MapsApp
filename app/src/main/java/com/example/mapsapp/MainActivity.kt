@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -166,6 +167,7 @@ fun MyDrawer(myViewModel: MyViewModel, navigationController: NavController) {
                     }
                 }
             )
+            Spacer(modifier = Modifier.weight(1f))
             NavigationDrawerItem(
                 colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Black, selectedContainerColor = Color.Cyan),
                 label = { Text(text = "LogOut", color = Color.White)},
@@ -226,7 +228,7 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState, navController: Nav
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val deployFilter by myViewModel.deployFilter.observeAsState(false)
-    var selectedFilter by remember { mutableStateOf(FilterOption.ALL) }
+    var selectedFilter by remember { mutableStateOf(myViewModel.selectedFilter) }
 
     TopAppBar(
         colors = TopAppBarColors(titleContentColor = Color.White, containerColor = Color.Black, navigationIconContentColor = Color.White, actionIconContentColor = Color.White, scrolledContainerColor = Color.Black),
@@ -252,10 +254,9 @@ fun MyTopAppBar(myViewModel: MyViewModel, state: DrawerState, navController: Nav
                     FilterDropDownMenu(
                         myViewModel = myViewModel,
                         onOptionSelected = { option ->
-                            selectedFilter = option
-                            myViewModel.filterList(selectedFilter)
+                            myViewModel.updateFilter(option)
                         },
-                        currentOption = selectedFilter)
+                        currentOption = selectedFilter.value!!)
                 }
             }
             if(currentRoute == Routes.DetailScreen.route) {

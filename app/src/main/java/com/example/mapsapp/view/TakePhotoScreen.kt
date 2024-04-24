@@ -67,14 +67,26 @@ fun Camera(navigationController: NavController, myViewModel: MyViewModel) {
         onResult = {
             if (Build.VERSION.SDK_INT<28){
                 bitmap= MediaStore.Images.Media.getBitmap(context.contentResolver,it)
-                if (it != null && comingFromMap) {
+                if (it != null && !comingFromMap) {
                     myViewModel.uploadImage(it)
+                }
+                else {
+                    myViewModel.addPhotosToNewMarker(it.toString())
+                    if (it != null) {
+                        myViewModel.uploadImage(it)
+                    }
                 }
             }else{
                 val source=it?.let { it1-> ImageDecoder.createSource(context.contentResolver,it1) }
                 source?.let { it1-> ImageDecoder.decodeBitmap(it1)}
-                if (it != null && comingFromMap) {
+                if (it != null && !comingFromMap) {
                     myViewModel.uploadImage(it)
+                }
+                else {
+                    myViewModel.addPhotosToNewMarker(it.toString())
+                    if (it != null) {
+                        myViewModel.uploadImage(it)
+                    }
                 }
                 Log.e("IMAGEN","si va")
             }

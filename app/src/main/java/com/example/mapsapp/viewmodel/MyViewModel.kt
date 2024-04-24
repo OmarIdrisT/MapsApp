@@ -16,7 +16,6 @@ import com.example.mapsapp.R
 import com.example.mapsapp.firebase.FirebaseRepository
 import com.example.mapsapp.firebase.firebasemodels.MarkerData
 import com.example.mapsapp.firebase.firebasemodels.User
-import com.example.mapsapp.firebase.firebasemodels.UserPrefs
 import com.example.mapsapp.models.FilterOption
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.DocumentChange
@@ -110,6 +109,8 @@ class MyViewModel {
     private val _registerMode = MutableLiveData(false)
     val registerMode = _registerMode
 
+    var firstAccess by mutableStateOf(true)
+
 
     //Funció que modifica la posició en el mapa (necessària per la creació de marcadors)
     fun positionChange(newPosition: LatLng) {
@@ -177,10 +178,6 @@ class MyViewModel {
                 marker.type == filterOption.title
             }.toMutableList()
         }
-    }
-
-    fun updateFilteredList() {
-        _filteredMarkerList.value = _markerList.value
     }
 
     //Funció que permet assignar a la variable marker el valor del marcador que volem mostrar a detalls.
@@ -304,7 +301,7 @@ class MyViewModel {
                         addPhotoToMarker(actualMarker.value!!, it.toString())
                     }
                     else {
-                        newMarkerPhotos.value!!.add(it.toString())
+                        addPhotosToNewMarker(it.toString())
                     }
 
                 }
@@ -354,11 +351,23 @@ class MyViewModel {
             _markerList.value = filtredList
         }
     }
+
+    var selectedFilter = MutableLiveData<FilterOption>(FilterOption.ALL)
+
+    fun updateFilter(filter: FilterOption) {
+        selectedFilter.value = filter
+        filterList(selectedFilter.value!!)
+    }
     fun deleteMarker(marker: MarkerData) {
         markerDeletionFromList(marker)
-        updateFilteredList()
-        repository.deleteMarker(marker)
+        repository.deleteMarkerFromDatabase(marker)
+        filterList(selectedFilter.value!!)
     }
+
+    fun updateFilteredList(completeList: MutableList<MarkerData>) {
+        _filteredMarkerList.value = completeList
+    }
+
 
     fun editMarker(newTitle: String, newDescription: String, newType: String) {
         _actualMarker.value?.title = newTitle
@@ -442,6 +451,10 @@ class MyViewModel {
         else {
             _registerMode.value = false
         }
+    }
+
+    fun updateAccess() {
+        firstAccess = false
     }
 
 

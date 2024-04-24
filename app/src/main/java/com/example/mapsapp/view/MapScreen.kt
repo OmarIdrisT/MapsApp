@@ -71,12 +71,8 @@ import java.util.UUID
 fun MapScreen(myViewModel: MyViewModel, navigationController: NavController) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    val myMarker: MarkerData by myViewModel.marker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
     val actualMarker: MarkerData by myViewModel.actualMarker.observeAsState(MarkerData("","","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf()))
-    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf(
-        MarkerData("", "","ITB",(LatLng(41.4534265, 2.1837151))," ", "", mutableListOf())
-    ))
-    val actualUser by myViewModel.actualUser.observeAsState()
+    val llistaMarkers:MutableList<MarkerData> by myViewModel.markerList.observeAsState(mutableListOf())
     val markPosition: LatLng by myViewModel.markPosition.observeAsState(LatLng(41.4534265, 2.1837151))
     val newMarkerPhotos: MutableList<String> by myViewModel.newMarkerPhotos.observeAsState(mutableListOf())
 
